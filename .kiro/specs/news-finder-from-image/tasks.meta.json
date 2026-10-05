@@ -1,0 +1,236 @@
+{
+  "pbtResults": {
+    "2.2 Tulis property test untuk idempotence `init_db()`": {
+      "status": "passed",
+      "lastRunTimestamp": 1790848568863
+    },
+    "3.2 Tulis property test untuk `compute_hashes()` (Property 4)": {
+      "status": "passed",
+      "lastRunTimestamp": 1790932135823
+    },
+    "3.3 Tulis property test untuk `similarity_score()` (Property 5)": {
+      "status": "passed",
+      "lastRunTimestamp": 1790933214527
+    }
+  },
+  "executionHistory": {
+    "1. Buat struktur proyek dan konfigurasi dependensi": [
+      {
+        "executionId": "affb6f07-5dc6-4dc7-8ff6-300eec6b037a",
+        "chatSessionId": "sess_e9e34182-df03-4d0d-b258-b32dd3dff528",
+        "timestamp": 1790847215579
+      },
+      {
+        "executionId": "affb6f07-5dc6-4dc7-8ff6-300eec6b037a",
+        "chatSessionId": "sess_e9e34182-df03-4d0d-b258-b32dd3dff528",
+        "timestamp": 1790847546712
+      }
+    ],
+    "2.1 Tulis fungsi `get_connection()` dan `init_db()`": [
+      {
+        "executionId": "dd730a04-186f-4695-8a98-ace0c86427aa",
+        "chatSessionId": "sess_676ecdce-3a1d-4dd3-a3c9-f4e3dc3e5172",
+        "timestamp": 1790847737847
+      },
+      {
+        "executionId": "dd730a04-186f-4695-8a98-ace0c86427aa",
+        "chatSessionId": "sess_676ecdce-3a1d-4dd3-a3c9-f4e3dc3e5172",
+        "timestamp": 1790847902440
+      },
+      {
+        "executionId": "7a575167-9252-4a1c-b757-e0349997545c",
+        "chatSessionId": "sess_49f96dd2-1307-4330-bb26-c79de23f0e24",
+        "timestamp": 1790847912324
+      },
+      {
+        "executionId": "7a575167-9252-4a1c-b757-e0349997545c",
+        "chatSessionId": "sess_49f96dd2-1307-4330-bb26-c79de23f0e24",
+        "timestamp": 1790848204407
+      }
+    ],
+    "2. Implementasi modul `database.py`": [
+      {
+        "executionId": "dd730a04-186f-4695-8a98-ace0c86427aa",
+        "chatSessionId": "sess_676ecdce-3a1d-4dd3-a3c9-f4e3dc3e5172",
+        "timestamp": 1790847902535
+      }
+    ],
+    "2.2 Tulis property test untuk idempotence `init_db()`": [
+      {
+        "executionId": "24391687-7f92-41b2-bcc7-7ae8960bdea5",
+        "chatSessionId": "sess_e26e3e4e-350c-4f0c-bf87-54dd551e8318",
+        "timestamp": 1790848231966
+      },
+      {
+        "executionId": "24391687-7f92-41b2-bcc7-7ae8960bdea5",
+        "chatSessionId": "sess_e26e3e4e-350c-4f0c-bf87-54dd551e8318",
+        "timestamp": 1790848583826
+      }
+    ],
+    "3.1 Tulis fungsi `compute_hashes()`, `hamming_distance()`, dan `similarity_score()`": [
+      {
+        "executionId": "2df93d64-a108-4bf8-bac2-65f2a46e6097",
+        "chatSessionId": "sess_0f8b6a15-f571-485a-987e-9d4fd2d0bc4f",
+        "timestamp": 1790848616313
+      },
+      {
+        "executionId": "212fb376-3fd2-4c49-84c3-08287148388d",
+        "chatSessionId": "sess_8ae79998-61f5-4f8b-ad91-48a90f09f271",
+        "timestamp": 1790931770316
+      },
+      {
+        "executionId": "212fb376-3fd2-4c49-84c3-08287148388d",
+        "chatSessionId": "sess_8ae79998-61f5-4f8b-ad91-48a90f09f271",
+        "timestamp": 1790932150200
+      }
+    ],
+    "3.2 Tulis property test untuk `compute_hashes()` (Property 4)": [
+      {
+        "executionId": "212fb376-3fd2-4c49-84c3-08287148388d",
+        "chatSessionId": "sess_8ae79998-61f5-4f8b-ad91-48a90f09f271",
+        "timestamp": 1790932158344
+      },
+      {
+        "executionId": "212fb376-3fd2-4c49-84c3-08287148388d",
+        "chatSessionId": "sess_8ae79998-61f5-4f8b-ad91-48a90f09f271",
+        "timestamp": 1790932161689
+      }
+    ],
+    "3. Implementasi modul `matcher.py`": [
+      {
+        "executionId": "212fb376-3fd2-4c49-84c3-08287148388d",
+        "chatSessionId": "sess_8ae79998-61f5-4f8b-ad91-48a90f09f271",
+        "timestamp": 1790932161783
+      }
+    ],
+    "3.3 Tulis property test untuk `similarity_score()` (Property 5)": [
+      {
+        "executionId": "5f44fbaf-44b8-4bad-b0c8-da14c94c6ce8",
+        "chatSessionId": "sess_3196b257-d410-457e-9d38-829841c0741d",
+        "timestamp": 1790932181250
+      }
+    ],
+    "4. Checkpoint — Verifikasi modul inti": [
+      {
+        "executionId": "9e41b965-f0a7-44a6-932d-c1a1224da656",
+        "chatSessionId": "sess_3ac87c68-61f1-4398-b0a4-1245fa69b52e",
+        "timestamp": 1790933027411
+      },
+      {
+        "executionId": "9e41b965-f0a7-44a6-932d-c1a1224da656",
+        "chatSessionId": "sess_3ac87c68-61f1-4398-b0a4-1245fa69b52e",
+        "timestamp": 1790933229413
+      }
+    ],
+    "5.1 Tulis konstanta, startup event, dan static mounts": [
+      {
+        "executionId": "bc1ed4c0-906c-4770-a7be-1e89bf4509bd",
+        "chatSessionId": "sess_0251af67-a8ba-4475-98b7-7b7e7d44984a",
+        "timestamp": 1790933375516
+      },
+      {
+        "executionId": "bc1ed4c0-906c-4770-a7be-1e89bf4509bd",
+        "chatSessionId": "sess_0251af67-a8ba-4475-98b7-7b7e7d44984a",
+        "timestamp": 1790933894837
+      },
+      {
+        "executionId": "564609a5-0cad-47d2-8953-919b0f805692",
+        "chatSessionId": "sess_df95b8d1-1b02-4e99-8306-dc02aa7ab10f",
+        "timestamp": 1790933925450
+      },
+      {
+        "executionId": "564609a5-0cad-47d2-8953-919b0f805692",
+        "chatSessionId": "sess_df95b8d1-1b02-4e99-8306-dc02aa7ab10f",
+        "timestamp": 1790934124736
+      }
+    ],
+    "5. Implementasi `main.py` — Setup awal, konstanta, dan startup": [
+      {
+        "executionId": "bc1ed4c0-906c-4770-a7be-1e89bf4509bd",
+        "chatSessionId": "sess_0251af67-a8ba-4475-98b7-7b7e7d44984a",
+        "timestamp": 1790933894961
+      }
+    ],
+    "6.1 Tulis dependency `verify_admin_key`": [
+      {
+        "executionId": "30740792-57a1-4b9b-a8e0-52876d6e03a5",
+        "chatSessionId": "sess_169d3b38-6ecf-48d2-a52e-017de399a780",
+        "timestamp": 1790934161187
+      },
+      {
+        "executionId": "30740792-57a1-4b9b-a8e0-52876d6e03a5",
+        "chatSessionId": "sess_169d3b38-6ecf-48d2-a52e-017de399a780",
+        "timestamp": 1790934490533
+      }
+    ],
+    "6. Implementasi `main.py` — Dependency autentikasi admin": [
+      {
+        "executionId": "30740792-57a1-4b9b-a8e0-52876d6e03a5",
+        "chatSessionId": "sess_169d3b38-6ecf-48d2-a52e-017de399a780",
+        "timestamp": 1790934490648
+      }
+    ],
+    "7. Implementasi `main.py` — Endpoint pencarian `POST /api/cari`": [
+      {
+        "executionId": "44f9c959-0c12-4143-898d-98b42e08792f",
+        "chatSessionId": "sess_e5ce2bd7-f5d7-481b-b3b1-f57265350d3f",
+        "timestamp": 1790934566428
+      },
+      {
+        "executionId": "44f9c959-0c12-4143-898d-98b42e08792f",
+        "chatSessionId": "sess_e5ce2bd7-f5d7-481b-b3b1-f57265350d3f",
+        "timestamp": 1790934710230
+      }
+    ],
+    "7.1 Tulis handler `POST /api/cari`": [
+      {
+        "executionId": "44f9c959-0c12-4143-898d-98b42e08792f",
+        "chatSessionId": "sess_e5ce2bd7-f5d7-481b-b3b1-f57265350d3f",
+        "timestamp": 1790934571748
+      },
+      {
+        "executionId": "44f9c959-0c12-4143-898d-98b42e08792f",
+        "chatSessionId": "sess_e5ce2bd7-f5d7-481b-b3b1-f57265350d3f",
+        "timestamp": 1790934710119
+      }
+    ],
+    "9.1 Tulis handler `GET /api/admin/berita`": [
+      {
+        "executionId": "72428577-5cbc-41be-8637-29cba9dcf257",
+        "chatSessionId": "sess_ea4a69fb-d58c-4367-9a47-fdbd43ae6b4a",
+        "timestamp": 1790934844050
+      },
+      {
+        "executionId": "72428577-5cbc-41be-8637-29cba9dcf257",
+        "chatSessionId": "sess_ea4a69fb-d58c-4367-9a47-fdbd43ae6b4a",
+        "timestamp": 1790935291022
+      }
+    ],
+    "9.3 Tulis handler `DELETE /api/admin/berita/{id}`": [
+      {
+        "executionId": "72428577-5cbc-41be-8637-29cba9dcf257",
+        "chatSessionId": "sess_ea4a69fb-d58c-4367-9a47-fdbd43ae6b4a",
+        "timestamp": 1790934848310
+      },
+      {
+        "executionId": "72428577-5cbc-41be-8637-29cba9dcf257",
+        "chatSessionId": "sess_ea4a69fb-d58c-4367-9a47-fdbd43ae6b4a",
+        "timestamp": 1790935294867
+      }
+    ],
+    "9. Implementasi `main.py` — Endpoint admin GET dan DELETE": [
+      {
+        "executionId": "72428577-5cbc-41be-8637-29cba9dcf257",
+        "chatSessionId": "sess_ea4a69fb-d58c-4367-9a47-fdbd43ae6b4a",
+        "timestamp": 1790935295053
+      }
+    ],
+    "10.1 Tulis handler `POST /api/admin/berita`": [
+      {
+        "executionId": "d680fe69-7d0f-46ee-9709-791f2d98cd2e",
+        "chatSessionId": "sess_cd0df1e0-9000-413d-bca6-6fb7b174945e",
+        "timestamp": 1791179950690
+      }
+    ]
+  }
+}
