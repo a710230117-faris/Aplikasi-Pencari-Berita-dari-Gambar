@@ -122,8 +122,8 @@ Implementasi dilakukan secara incremental dari lapisan bawah ke atas: konfiguras
     - Gunakan dependency `verify_admin_key`
     - _Requirements: 4.1, 4.2, 4.3, 4.4_
 
-- [ ] 10. Implementasi `main.py` — Endpoint admin `POST /api/admin/berita`
-  - [-] 10.1 Tulis handler `POST /api/admin/berita`
+- [x] 10. Implementasi `main.py` — Endpoint admin `POST /api/admin/berita`
+  - [x] 10.1 Tulis handler `POST /api/admin/berita`
     - Validasi semua input sebelum menyimpan file apapun: `judul` 1–255 char, `tanggal` format `^\d{4}-\d{2}-\d{2}$`, `foto.content_type` in `{image/jpeg, image/png}`, ukuran foto ≤ 10 MB, `pdf.content_type == "application/pdf"`, ukuran PDF ≤ 30 MB
     - Baca ukuran file via `len(await file.read())` + `await file.seek(0)`
     - Simpan foto ke `uploads/foto/<uuid4>.<ext>` dan PDF ke `uploads/pdf/<uuid4>.pdf`
@@ -136,11 +136,11 @@ Implementasi dilakukan secara incremental dari lapisan bawah ke atas: konfiguras
     - Anotasi: `# Feature: news-finder-from-image, Property 11`
     - **Validates: Requirements 3.2, 3.3, 3.4, 3.5**
 
-- [ ] 11. Checkpoint — Verifikasi semua endpoint backend
+- [x] 11. Checkpoint — Verifikasi semua endpoint backend
   - Pastikan semua tes backend lulus termasuk happy path (tambah → list → hapus), tanyakan kepada pengguna jika ada pertanyaan.
 
-- [ ] 12. Implementasi frontend — CSS bersama (`static/css/style.css`)
-  - [ ] 12.1 Tulis `static/css/style.css` dengan layout responsif
+- [x] 12. Implementasi frontend — CSS bersama (`static/css/style.css`)
+  - [x] 12.1 Tulis `static/css/style.css` dengan layout responsif
     - Implementasi CSS untuk kedua halaman dengan variabel CSS (`--primary`, `--bg`, dll.)
     - Desktop (≥1024px): tata letak multi-kolom menggunakan CSS Grid atau Flexbox
     - Mobile (<768px): media query untuk tata letak satu kolom, ukuran sentuh minimal 44×44px
@@ -148,13 +148,13 @@ Implementasi dilakukan secara incremental dari lapisan bawah ke atas: konfiguras
     - Semua teks placeholder, label, dan tombol dalam Bahasa Indonesia
     - _Requirements: 10.1, 10.2, 10.3, 10.4, 10.5, 10.6, 10.7, 10.8_
 
-- [ ] 13. Implementasi frontend — Halaman Pencarian
-  - [ ] 13.1 Tulis `static/index.html`
+- [x] 13. Implementasi frontend — Halaman Pencarian
+  - [x] 13.1 Tulis `static/index.html`
     - Struktur HTML5 dengan `<input type="file" accept="image/jpeg,image/png,image/webp">`, area preview gambar, tombol "Cari", area hasil pencarian, container iframe PDF viewer
     - Semua label, placeholder, dan teks dalam Bahasa Indonesia
     - Link ke `static/css/style.css` dan `static/js/search.js`
     - _Requirements: 7.1, 7.2, 11.5_
-  - [ ] 13.2 Tulis `static/js/search.js`
+  - [x] 13.2 Tulis `static/js/search.js`
     - `handleFileSelect(event)`: validasi format (JPEG/PNG/WebP) dan ukuran ≤ 5 MB; tampilkan pesan validasi Bahasa Indonesia jika tidak valid; tampilkan preview via `FileReader.readAsDataURL`
     - `handleSearch(event)`: cegah jika tidak ada file; bangun `FormData`; kirim `fetch('/api/cari')` dengan `AbortController` timeout 30 detik; tampilkan loading indicator + disable tombol Cari
     - `renderResults(data)`: tampilkan kartu hasil dengan judul, tanggal, score, tombol "Buka PDF"; auto-buka PDF pertama di iframe; tampilkan "Berita tidak ditemukan" jika `ditemukan: false`
@@ -162,21 +162,21 @@ Implementasi dilakukan secara incremental dari lapisan bawah ke atas: konfiguras
     - Tangani timeout → sembunyikan loading, aktifkan tombol, tampilkan pesan error
     - _Requirements: 7.1, 7.2, 7.3, 7.4, 7.5, 7.6, 7.7, 7.8, 7.9, 7.10, 7.11, 7.12_
 
-- [ ] 14. Implementasi frontend — Halaman Admin
-  - [ ] 14.1 Tulis `static/admin.html`
+- [x] 14. Implementasi frontend — Halaman Admin
+  - [x] 14.1 Tulis `static/admin.html`
     - Struktur HTML5 dengan input Admin_Key di bagian atas, form penambahan berita (judul max 255 char, tanggal, input foto JPG/PNG/JPEG max 10MB, input PDF max 30MB), area daftar berita dengan input filter, area pesan status
     - Semua label, placeholder, dan teks dalam Bahasa Indonesia
     - Link ke `static/css/style.css` dan `static/js/admin.js`
     - _Requirements: 8.1, 8.2, 11.6_
-  - [ ] 14.2 Tulis `static/js/admin.js`
+  - [x] 14.2 Tulis `static/js/admin.js`
     - `loadBerita()`: `GET /api/admin/berita` dengan header `x-admin-key`, render daftar dengan thumbnail foto, judul, tanggal format DD/MM/YYYY, link PDF, tombol "Hapus"; tampilkan jumlah total; tampilkan "Belum ada berita yang ditambahkan" jika kosong
     - `handleAddBerita(event)`: validasi semua field client-side (tampilkan field kosong); `POST /api/admin/berita` dengan `FormData`; pada sukses: tampilkan pesan sukses, kosongkan form, reload daftar ≤ 2 detik; pada error: tampilkan pesan error, pertahankan isian form
     - `handleDeleteBerita(id, judul)`: tampilkan dialog konfirmasi dengan judul berita; pada konfirmasi: `DELETE /api/admin/berita/{id}` dengan header `x-admin-key`; pada sukses: hapus item dari DOM, perbarui jumlah, tampilkan pesan sukses ≤ 2 detik; pada error: tampilkan pesan error
     - `filterBerita(query)`: filter client-side dengan `toLowerCase().includes()` pada judul; tampilkan pesan jika nol kecocokan
     - _Requirements: 8.1, 8.2, 8.3, 8.4, 8.5, 8.6, 8.7, 8.8, 8.9, 8.10, 8.11, 8.12, 8.13, 8.14, 8.15, 8.16_
 
-- [ ] 15. Tulis integration tests non-property (`tests/test_api.py`)
-  - [ ]* 15.1 Tulis integration tests happy path dan edge cases
+- [x] 15. Tulis integration tests non-property (`tests/test_api.py`)
+  - [x]* 15.1 Tulis integration tests happy path dan edge cases
     - Happy path: tambah berita (POST 201) → verifikasi muncul di GET list → hapus (DELETE 200) → verifikasi hilang dari GET list
     - Edge cases: DELETE id tidak ada → 404; GET list saat DB kosong → daftar kosong; POST `/api/cari` tanpa berita di DB → `{"ditemukan": false, "hasil": []}`
     - Error handling: mock DB failure pada `/api/cari` → 503; mock DB failure pada GET admin → 500

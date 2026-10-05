@@ -1,12 +1,262 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pencari Berita dari Gambar</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Pencari Berita dari Gambar</title>
+  <link rel="stylesheet" href="/static/css/style.css" />
 </head>
 <body>
-    <h1>Pencari Berita dari Gambar</h1>
-    <p>Halaman ini sedang dalam pengembangan.</p>
+
+  <!-- ================================================================
+       Header
+       ================================================================ -->
+  <header class="site-header" role="banner">
+    <div class="container">
+      <div class="site-header__inner">
+        <!-- Ikon kamera (SVG inline) -->
+        <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28"
+             viewBox="0 0 24 24" fill="none" stroke="currentColor"
+             stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+             aria-hidden="true" focusable="false">
+          <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8
+                   a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+          <circle cx="12" cy="13" r="4"/>
+        </svg>
+        <div>
+          <h1 class="site-header__title">Pencari Berita dari Gambar</h1>
+          <p class="site-header__subtitle">Unggah gambar untuk menemukan berita yang relevan</p>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- ================================================================
+       Konten Utama
+       ================================================================ -->
+  <main class="site-main" id="main-content">
+    <div class="container">
+
+      <!-- Tata letak dua kolom (desktop ≥1024px) / satu kolom (mobile) -->
+      <div class="search-layout">
+
+        <!-- ============================================================
+             Kolom Kiri / Atas: Panel Unggah & Hasil Pencarian
+             ============================================================ -->
+        <section class="search-panel" aria-labelledby="panel-title">
+          <h2 class="search-panel__title" id="panel-title">Cari Berita</h2>
+          <p class="search-panel__desc">
+            Pilih atau seret gambar (JPEG, PNG, atau WebP, maks. 5 MB) untuk
+            mencari berita yang berkaitan.
+          </p>
+
+          <!-- ---- Area Unggah Gambar ---- -->
+          <div class="upload-area" id="upload-area"
+               role="button" tabindex="0"
+               aria-label="Klik atau seret gambar ke sini untuk mengunggah">
+
+            <!-- Ikon unggah -->
+            <svg class="upload-area__icon" xmlns="http://www.w3.org/2000/svg"
+                 viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                 stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"
+                 aria-hidden="true" focusable="false">
+              <polyline points="16 16 12 12 8 16"/>
+              <line x1="12" y1="12" x2="12" y2="21"/>
+              <path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26
+                       A8 8 0 1 0 3 16.3"/>
+            </svg>
+
+            <span class="upload-area__text">
+              Klik untuk memilih gambar atau seret ke sini
+            </span>
+            <span class="upload-area__hint">
+              Format: JPEG, PNG, WebP &mdash; Ukuran maks. 5 MB
+            </span>
+
+            <!-- Input file tersembunyi; dikendalikan oleh JS -->
+            <input
+              class="upload-area__input"
+              type="file"
+              id="file-input"
+              name="file"
+              accept="image/jpeg,image/png,image/webp"
+              aria-label="Pilih file gambar"
+            />
+          </div>
+
+          <!-- ---- Pratinjau Gambar ---- -->
+          <div class="preview-container" id="preview-container" aria-live="polite">
+            <img
+              class="preview-image"
+              id="preview-image"
+              src=""
+              alt="Pratinjau gambar yang dipilih"
+            />
+            <p class="preview-filename" id="preview-filename"></p>
+          </div>
+
+          <!-- ---- Pesan Validasi ---- -->
+          <div
+            class="alert alert--warning"
+            id="validation-message"
+            role="alert"
+            aria-live="assertive"
+          >
+            <svg class="alert__icon" xmlns="http://www.w3.org/2000/svg"
+                 viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                 stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                 aria-hidden="true" focusable="false">
+              <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94
+                       a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+              <line x1="12" y1="9" x2="12" y2="13"/>
+              <line x1="12" y1="17" x2="12.01" y2="17"/>
+            </svg>
+            <div class="alert__body">
+              <p class="alert__text" id="validation-message-text"></p>
+            </div>
+          </div>
+
+          <!-- ---- Tombol Cari ---- -->
+          <div style="margin-top: var(--space-5);">
+            <button
+              class="btn btn--primary btn--full btn--lg"
+              type="button"
+              id="btn-cari"
+              aria-label="Mulai pencarian berita"
+            >
+              <!-- Ikon kaca pembesar -->
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18"
+                   viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                   stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                   aria-hidden="true" focusable="false">
+                <circle cx="11" cy="11" r="8"/>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+              </svg>
+              Cari
+            </button>
+          </div>
+
+          <!-- ---- Indikator Loading ---- -->
+          <div
+            class="loading-indicator"
+            id="loading-indicator"
+            role="status"
+            aria-live="polite"
+            aria-label="Sedang memproses pencarian"
+          >
+            <div class="loading-spinner" aria-hidden="true"></div>
+            <p class="loading-indicator__text">Sedang mencari berita&hellip;</p>
+          </div>
+
+          <!-- ---- Pesan Error (timeout / server error) ---- -->
+          <div
+            class="alert alert--error"
+            id="error-message"
+            role="alert"
+            aria-live="assertive"
+          >
+            <svg class="alert__icon" xmlns="http://www.w3.org/2000/svg"
+                 viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                 stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                 aria-hidden="true" focusable="false">
+              <circle cx="12" cy="12" r="10"/>
+              <line x1="12" y1="8" x2="12" y2="12"/>
+              <line x1="12" y1="16" x2="12.01" y2="16"/>
+            </svg>
+            <div class="alert__body">
+              <p class="alert__text" id="error-message-text"></p>
+            </div>
+          </div>
+
+        </section><!-- /search-panel -->
+
+        <!-- ============================================================
+             Kolom Kanan / Bawah: Hasil & PDF Viewer
+             ============================================================ -->
+        <div class="results-panel" id="results-panel">
+
+          <!-- ---- Kartu Hasil Pencarian ---- -->
+          <section
+            id="results-container"
+            aria-label="Hasil pencarian berita"
+            aria-live="polite"
+          >
+            <!-- Kartu hasil dirender oleh search.js -->
+          </section>
+
+          <!-- ---- Pesan "Berita Tidak Ditemukan" ---- -->
+          <div
+            class="no-results"
+            id="no-results-container"
+            role="status"
+            aria-live="polite"
+          >
+            <svg class="no-results__icon" xmlns="http://www.w3.org/2000/svg"
+                 viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                 stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"
+                 aria-hidden="true" focusable="false">
+              <circle cx="11" cy="11" r="8"/>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+              <line x1="8" y1="11" x2="14" y2="11"/>
+            </svg>
+            <p class="no-results__text">Berita tidak ditemukan</p>
+            <p class="no-results__hint">
+              Coba unggah gambar lain yang lebih spesifik.
+            </p>
+          </div>
+
+          <!-- ---- PDF Viewer ---- -->
+          <div class="pdf-viewer" id="pdf-viewer">
+            <div class="pdf-viewer__header">
+              <span class="pdf-viewer__title" id="pdf-viewer-title">
+                Tampilan PDF
+              </span>
+              <button
+                class="btn btn--ghost btn--sm"
+                type="button"
+                id="btn-tutup-pdf"
+                aria-label="Tutup tampilan PDF"
+              >
+                <!-- Ikon tutup (X) -->
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
+                     viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                     stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                     aria-hidden="true" focusable="false">
+                  <line x1="18" y1="6" x2="6" y2="18"/>
+                  <line x1="6" y1="6" x2="18" y2="18"/>
+                </svg>
+                Tutup
+              </button>
+            </div>
+            <iframe
+              class="pdf-viewer__iframe"
+              id="pdf-iframe"
+              src=""
+              title="Tampilan file PDF berita"
+              aria-label="PDF Viewer"
+            ></iframe>
+          </div><!-- /pdf-viewer -->
+
+        </div><!-- /results-panel -->
+
+      </div><!-- /search-layout -->
+
+    </div><!-- /container -->
+  </main>
+
+  <!-- ================================================================
+       Footer
+       ================================================================ -->
+  <footer class="site-footer" role="contentinfo">
+    <div class="container">
+      <p>&copy; 2024 Pencari Berita dari Gambar. Semua hak dilindungi.</p>
+    </div>
+  </footer>
+
+  <!-- ================================================================
+       Script
+       ================================================================ -->
+  <script src="/static/js/search.js"></script>
+
 </body>
 </html>
