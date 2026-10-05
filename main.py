@@ -12,6 +12,8 @@ import logging
 import os
 import re
 import uuid
+from contextlib import asynccontextmanager
+from pathlib import Path
 from typing import Optional
 
 from fastapi import Depends, FastAPI, File, Header, HTTPException, UploadFile
@@ -35,6 +37,13 @@ logger = logging.getLogger(__name__)
 # Constants
 # ---------------------------------------------------------------------------
 
+BASE_DIR = Path(__file__).resolve().parent
+UPLOAD_ROOT = BASE_DIR / "uploads"
+FOTO_DIR = UPLOAD_ROOT / "foto"
+PDF_DIR = UPLOAD_ROOT / "pdf"
+TMP_DIR = UPLOAD_ROOT / "tmp"
+STATIC_DIR = BASE_DIR / "static"
+
 MAX_JARAK: int = 80
 ADMIN_KEY: str = os.getenv("ADMIN_KEY", "admin-dev-key")
 
@@ -42,29 +51,18 @@ ADMIN_KEY: str = os.getenv("ADMIN_KEY", "admin-dev-key")
 # Application
 # ---------------------------------------------------------------------------
 
-app = FastAPI(title="Pencari Berita dari Gambar")
 
-# ---------------------------------------------------------------------------
-# Startup event
-# ---------------------------------------------------------------------------
-
-
-@app.on_event("startup")
-async def startup_event() -> None:
+@asynccontextmanager
+async def lifespan(_: FastAPI):
     """
-    Jalankan saat server pertama kali start:
-    1. Buat folder uploads jika belum ada.                      (Req 1.3)
-    2. Hapus semua file tmp_* di uploads/tmp/.                  (Req 1.4)
-    3. Inisialisasi database.                                   (Req 1.1)
+    Lifespan startup untuk memastikan folder upload ada, tmp dibersihkan,
+    dan database diinisialisasi tanpa memakai deprecated startup hook.
     """
-    # 1. Buat direktori yang diperlukan
-    for folder in ("uploads/foto", "uploads/pdf", "uploads/tmp"):
-        os.makedirs(folder, exist_ok=True)
+    for folder in (FOTO_DIR, PDF_DIR, TMP_DIR):
+        folder.mkdir(parents=True, exist_ok=True)
         logger.info("Folder dipastikan ada: %s", folder)
 
-    # 2. Hapus file tmp_* (bukan subdirektori) di uploads/tmp/
-    pattern = os.path.join("uploads", "tmp", "tmp_*")
-    for tmp_file in glob.glob(pattern):
+    for tmp_file in glob.glob(str(TMP_DIR / "tmp_*")):
         if os.path.isfile(tmp_file):
             try:
                 os.remove(tmp_file)
@@ -72,9 +70,12 @@ async def startup_event() -> None:
             except OSError as exc:
                 logger.error("Gagal menghapus file tmp %s: %s", tmp_file, exc)
 
-    # 3. Inisialisasi skema database
     database.init_db()
     logger.info("Database diinisialisasi.")
+    yield
+
+
+app = FastAPI(title="Pencari Berita dari Gambar", lifespan=lifespan)
 
 
 # ---------------------------------------------------------------------------
@@ -84,22 +85,23 @@ async def startup_event() -> None:
 # Sajikan file foto berita → GET /files/foto/{filename}  (Req 1.5, 1.6)
 app.mount(
     "/files/foto",
-    StaticFiles(directory="uploads/foto"),
+    StaticFiles(directory=str(FOTO_DIR)),
     name="files_foto",
 )
 
 # Sajikan file PDF berita → GET /files/pdf/{filename}    (Req 1.7, 1.8)
 app.mount(
     "/files/pdf",
-    StaticFiles(directory="uploads/pdf"),
+    StaticFiles(directory=str(PDF_DIR)),
     name="files_pdf",
 )
 
 # CATATAN: uploads/tmp TIDAK di-mount agar akses ke /uploads/tmp/ otomatis 404 (Req 1.9)
 
-# Sajikan aset statis HTML/CSS/JS → GET /...             (Req 11.1)
+# Sajikan aset statis HTML/CSS/JS → GET /static/...      (Req 11.1)
 # Mount ini harus didaftarkan SETELAH route-route API agar tidak membayangi mereka.
-# Dilakukan di bagian bawah file setelah semua route didefinisikan.
+# Pada aplikasi ini, root page di-render melalui route terpisah agar URL /static/
+# tetap valid dan tidak konflik dengan file HTML yang disajikan di /.
 
 
 # ---------------------------------------------------------------------------
@@ -107,10 +109,16 @@ app.mount(
 # ---------------------------------------------------------------------------
 
 
+@app.get("/", include_in_schema=False)
+async def index_page() -> FileResponse:
+    """Sajikan halaman utama aplikasi."""
+    return FileResponse(str(STATIC_DIR / "index.html"))
+
+
 @app.get("/admin", include_in_schema=False)
 async def admin_page() -> FileResponse:
     """Sajikan halaman admin. (Req 11.1)"""
-    return FileResponse("static/admin.html")
+    return FileResponse(str(STATIC_DIR / "admin.html"))
 
 
 # ---------------------------------------------------------------------------
@@ -158,7 +166,7 @@ async def cari_berita(file: UploadFile = File(...)):
         )
 
     # 2. Simpan ke tmp file sementara                         (Req 6.3)
-    tmp_path = f"uploads/tmp/tmp_{uuid.uuid4()}"
+    tmp_path = TMP_DIR / f"tmp_{uuid.uuid4()}"
     try:
         with open(tmp_path, "wb") as f:
             f.write(await file.read())
@@ -311,7 +319,7 @@ async def hapus_berita(berita_id: int):
         )
 
     # 3. Hapus file foto dari disk (try/except terpisah)
-    foto_path = os.path.join("uploads", "foto", row["foto_file"])
+    foto_path = FOTO_DIR / row["foto_file"]
     try:
         os.remove(foto_path)
         logger.info("File foto dihapus: %s", foto_path)
@@ -319,7 +327,7 @@ async def hapus_berita(berita_id: int):
         logger.error("Gagal menghapus file foto %s: %s", foto_path, exc)
 
     # 4. Hapus file PDF dari disk (try/except terpisah)
-    pdf_path = os.path.join("uploads", "pdf", row["pdf_file"])
+    pdf_path = PDF_DIR / row["pdf_file"]
     try:
         os.remove(pdf_path)
         logger.info("File PDF dihapus: %s", pdf_path)
@@ -412,9 +420,9 @@ async def tambah_berita(
     ext_map = {"image/jpeg": "jpg", "image/png": "png"}
     ext = ext_map[foto.content_type]
     foto_filename = f"{uuid.uuid4()}.{ext}"
-    pdf_filename  = f"{uuid.uuid4()}.pdf"
-    foto_path = os.path.join("uploads", "foto", foto_filename)
-    pdf_path  = os.path.join("uploads", "pdf",  pdf_filename)
+    pdf_filename = f"{uuid.uuid4()}.pdf"
+    foto_path = FOTO_DIR / foto_filename
+    pdf_path = PDF_DIR / pdf_filename
 
     # ------------------------------------------------------------------
     # 3. Simpan file + hitung hash + INSERT DB (atomik)    (Req 3.1, 3.9)
@@ -492,11 +500,11 @@ async def tambah_berita(
 
 
 # ---------------------------------------------------------------------------
-# Mount static root TERAKHIR agar route API tidak tertutupi  (Req 11.1)
+# Mount static root: aset frontend di /static/
 # ---------------------------------------------------------------------------
 
 app.mount(
-    "/",
-    StaticFiles(directory="static", html=True),
+    "/static",
+    StaticFiles(directory=str(STATIC_DIR)),
     name="static",
 )

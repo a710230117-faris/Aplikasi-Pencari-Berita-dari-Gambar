@@ -5,4 +5,4 @@ pillow
 imagehash
 pytest
 hypothesis
-httpx
+httpx2

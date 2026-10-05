@@ -230,6 +230,152 @@
         "executionId": "d680fe69-7d0f-46ee-9709-791f2d98cd2e",
         "chatSessionId": "sess_cd0df1e0-9000-413d-bca6-6fb7b174945e",
         "timestamp": 1791179950690
+      },
+      {
+        "executionId": "794a1969-f8c7-4479-962d-33b5024b1fb1",
+        "chatSessionId": "sess_ab6c2ec5-e673-45a6-b7e1-8107716655cf",
+        "timestamp": 1791182939088
+      },
+      {
+        "executionId": "794a1969-f8c7-4479-962d-33b5024b1fb1",
+        "chatSessionId": "sess_ab6c2ec5-e673-45a6-b7e1-8107716655cf",
+        "timestamp": 1791183057479
+      },
+      {
+        "executionId": "d4426c0e-e611-4ac8-bc1b-1541a4eccc3f",
+        "chatSessionId": "sess_986300b4-a4eb-483c-8ca5-4b8147840af7",
+        "timestamp": 1791183071406
+      },
+      {
+        "executionId": "d4426c0e-e611-4ac8-bc1b-1541a4eccc3f",
+        "chatSessionId": "sess_986300b4-a4eb-483c-8ca5-4b8147840af7",
+        "timestamp": 1791183765290
+      }
+    ],
+    "10. Implementasi `main.py` — Endpoint admin `POST /api/admin/berita`": [
+      {
+        "executionId": "794a1969-f8c7-4479-962d-33b5024b1fb1",
+        "chatSessionId": "sess_ab6c2ec5-e673-45a6-b7e1-8107716655cf",
+        "timestamp": 1791183058003
+      }
+    ],
+    "11. Checkpoint — Verifikasi semua endpoint backend": [
+      {
+        "executionId": "8586a005-d8d1-4084-9be2-8ab96b8572ff",
+        "chatSessionId": "sess_2d78c045-2ee4-44d7-9c92-b121f15fe384",
+        "timestamp": 1791183952322
+      },
+      {
+        "executionId": "8586a005-d8d1-4084-9be2-8ab96b8572ff",
+        "chatSessionId": "sess_2d78c045-2ee4-44d7-9c92-b121f15fe384",
+        "timestamp": 1791184816925
+      }
+    ],
+    "12.1 Tulis `static/css/style.css` dengan layout responsif": [
+      {
+        "executionId": "92e2f5d5-2601-4322-8d57-d9cb5293fa58",
+        "chatSessionId": "sess_a765403b-e4c0-4cb7-acc0-fae4e161f33d",
+        "timestamp": 1791184936274
+      },
+      {
+        "executionId": "92e2f5d5-2601-4322-8d57-d9cb5293fa58",
+        "chatSessionId": "sess_a765403b-e4c0-4cb7-acc0-fae4e161f33d",
+        "timestamp": 1791185161838
+      }
+    ],
+    "12. Implementasi frontend — CSS bersama (`static/css/style.css`)": [
+      {
+        "executionId": "92e2f5d5-2601-4322-8d57-d9cb5293fa58",
+        "chatSessionId": "sess_a765403b-e4c0-4cb7-acc0-fae4e161f33d",
+        "timestamp": 1791185162103
+      }
+    ],
+    "13.1 Tulis `static/index.html`": [
+      {
+        "executionId": "77988240-614e-4511-aadf-afeae3666e7b",
+        "chatSessionId": "sess_720bb0cf-b411-4447-9108-4e697f37ea11",
+        "timestamp": 1791186096727
+      },
+      {
+        "executionId": "77988240-614e-4511-aadf-afeae3666e7b",
+        "chatSessionId": "sess_720bb0cf-b411-4447-9108-4e697f37ea11",
+        "timestamp": 1791186222877
+      }
+    ],
+    "13.2 Tulis `static/js/search.js`": [
+      {
+        "executionId": "77988240-614e-4511-aadf-afeae3666e7b",
+        "chatSessionId": "sess_720bb0cf-b411-4447-9108-4e697f37ea11",
+        "timestamp": 1791186226310
+      },
+      {
+        "executionId": "77988240-614e-4511-aadf-afeae3666e7b",
+        "chatSessionId": "sess_720bb0cf-b411-4447-9108-4e697f37ea11",
+        "timestamp": 1791186863843
+      }
+    ],
+    "13. Implementasi frontend — Halaman Pencarian": [
+      {
+        "executionId": "77988240-614e-4511-aadf-afeae3666e7b",
+        "chatSessionId": "sess_720bb0cf-b411-4447-9108-4e697f37ea11",
+        "timestamp": 1791186863968
+      }
+    ],
+    "14.1 Tulis `static/admin.html`": [
+      {
+        "executionId": "5910c20c-b43d-44d4-a2e2-8fbe5130878f",
+        "chatSessionId": "sess_2a64dd1a-09fa-4ecc-bb37-2c4fd6131c31",
+        "timestamp": 1791186958503
+      },
+      {
+        "executionId": "5910c20c-b43d-44d4-a2e2-8fbe5130878f",
+        "chatSessionId": "sess_2a64dd1a-09fa-4ecc-bb37-2c4fd6131c31",
+        "timestamp": 1791187531332
+      }
+    ],
+    "14.2 Tulis `static/js/admin.js`": [
+      {
+        "executionId": "5910c20c-b43d-44d4-a2e2-8fbe5130878f",
+        "chatSessionId": "sess_2a64dd1a-09fa-4ecc-bb37-2c4fd6131c31",
+        "timestamp": 1791186972782
+      },
+      {
+        "executionId": "5910c20c-b43d-44d4-a2e2-8fbe5130878f",
+        "chatSessionId": "sess_2a64dd1a-09fa-4ecc-bb37-2c4fd6131c31",
+        "timestamp": 1791187535695
+      }
+    ],
+    "14. Implementasi frontend — Halaman Admin": [
+      {
+        "executionId": "5910c20c-b43d-44d4-a2e2-8fbe5130878f",
+        "chatSessionId": "sess_2a64dd1a-09fa-4ecc-bb37-2c4fd6131c31",
+        "timestamp": 1791187535836
+      }
+    ],
+    "15.1 Tulis integration tests happy path dan edge cases": [
+      {
+        "executionId": "68de82a0-6fb1-46a8-a2bb-7cb3cb1ac8f5",
+        "chatSessionId": "sess_150d2a34-2ddc-43dd-8c74-cb427d3d0d9e",
+        "timestamp": 1791187624869
+      },
+      {
+        "executionId": "68de82a0-6fb1-46a8-a2bb-7cb3cb1ac8f5",
+        "chatSessionId": "sess_150d2a34-2ddc-43dd-8c74-cb427d3d0d9e",
+        "timestamp": 1791189461448
+      }
+    ],
+    "15. Tulis integration tests non-property (`tests/test_api.py`)": [
+      {
+        "executionId": "68de82a0-6fb1-46a8-a2bb-7cb3cb1ac8f5",
+        "chatSessionId": "sess_150d2a34-2ddc-43dd-8c74-cb427d3d0d9e",
+        "timestamp": 1791189461609
+      }
+    ],
+    "16. Final checkpoint — Semua tes lulus": [
+      {
+        "executionId": "3b60828a-6ec9-4984-adf2-0ff6a858e9ad",
+        "chatSessionId": "sess_1414fee7-2fd0-4dfa-9f04-c90e53684222",
+        "timestamp": 1791190470369
       }
     ]
   }

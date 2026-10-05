@@ -1,12 +1,476 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin — Pencari Berita dari Gambar</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin - Pencari Berita dari Gambar</title>
+  <link rel="stylesheet" href="/static/css/style.css" />
 </head>
 <body>
-    <h1>Halaman Admin</h1>
-    <p>Halaman ini sedang dalam pengembangan.</p>
+
+  <!-- ================================================================
+       Header
+       ================================================================ -->
+  <header class="site-header" role="banner">
+    <div class="container">
+      <div class="site-header__inner">
+        <!-- Ikon kunci admin (SVG inline) -->
+        <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28"
+             viewBox="0 0 24 24" fill="none" stroke="currentColor"
+             stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+             aria-hidden="true" focusable="false">
+          <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+          <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+        </svg>
+        <div>
+          <h1 class="site-header__title">Halaman Admin</h1>
+          <p class="site-header__subtitle">Kelola koleksi berita — tambah dan hapus data berita</p>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- ================================================================
+       Bar Admin Key
+       ================================================================ -->
+  <div class="admin-key-bar" id="admin-key-bar" role="region" aria-label="Autentikasi Admin">
+    <div class="container">
+      <div class="admin-key-bar__inner">
+        <label class="admin-key-bar__label" for="admin-key-input">
+          Admin Key
+        </label>
+        <input
+          class="form-control admin-key-bar__input"
+          type="password"
+          id="admin-key-input"
+          name="admin-key"
+          placeholder="Masukkan Admin Key…"
+          autocomplete="current-password"
+          aria-label="Masukkan Admin Key untuk mengakses halaman admin"
+          aria-required="true"
+        />
+        <button
+          class="btn btn--primary"
+          type="button"
+          id="btn-muat-berita"
+          aria-label="Muat daftar berita menggunakan Admin Key yang dimasukkan"
+        >
+          <!-- Ikon refresh -->
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
+               viewBox="0 0 24 24" fill="none" stroke="currentColor"
+               stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+               aria-hidden="true" focusable="false">
+            <polyline points="23 4 23 10 17 10"/>
+            <polyline points="1 20 1 14 7 14"/>
+            <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10
+                     M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
+          </svg>
+          Muat Berita
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================================================================
+       Pesan Status Global (sukses / error dari aksi admin)
+       ================================================================ -->
+  <div class="container">
+    <!-- Pesan Sukses -->
+    <div
+      class="alert alert--success"
+      id="status-message-success"
+      role="status"
+      aria-live="polite"
+      style="margin-top: var(--space-4);"
+    >
+      <svg class="alert__icon" xmlns="http://www.w3.org/2000/svg"
+           viewBox="0 0 24 24" fill="none" stroke="currentColor"
+           stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+           aria-hidden="true" focusable="false">
+        <polyline points="20 6 9 17 4 12"/>
+      </svg>
+      <div class="alert__body">
+        <p class="alert__text" id="status-message-success-text"></p>
+      </div>
+      <button class="alert__close" type="button"
+              id="btn-tutup-sukses" aria-label="Tutup pesan sukses">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
+             viewBox="0 0 24 24" fill="none" stroke="currentColor"
+             stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+             aria-hidden="true" focusable="false">
+          <line x1="18" y1="6" x2="6" y2="18"/>
+          <line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
+    </div>
+
+    <!-- Pesan Error -->
+    <div
+      class="alert alert--error"
+      id="status-message-error"
+      role="alert"
+      aria-live="assertive"
+      style="margin-top: var(--space-4);"
+    >
+      <svg class="alert__icon" xmlns="http://www.w3.org/2000/svg"
+           viewBox="0 0 24 24" fill="none" stroke="currentColor"
+           stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+           aria-hidden="true" focusable="false">
+        <circle cx="12" cy="12" r="10"/>
+        <line x1="12" y1="8" x2="12" y2="12"/>
+        <line x1="12" y1="16" x2="12.01" y2="16"/>
+      </svg>
+      <div class="alert__body">
+        <p class="alert__text" id="status-message-error-text"></p>
+      </div>
+      <button class="alert__close" type="button"
+              id="btn-tutup-error" aria-label="Tutup pesan error">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
+             viewBox="0 0 24 24" fill="none" stroke="currentColor"
+             stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+             aria-hidden="true" focusable="false">
+          <line x1="18" y1="6" x2="6" y2="18"/>
+          <line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- ================================================================
+       Konten Utama
+       ================================================================ -->
+  <main class="site-main" id="main-content">
+    <div class="container">
+
+      <!-- Tata letak dua kolom (desktop ≥1024px) / satu kolom (mobile) -->
+      <div class="admin-layout">
+
+        <!-- ============================================================
+             Kolom Kiri / Atas: Form Tambah Berita
+             ============================================================ -->
+        <section class="admin-form-panel" aria-labelledby="form-panel-title">
+          <h2 class="admin-form-panel__title" id="form-panel-title">
+            Tambah Berita Baru
+          </h2>
+
+          <form
+            class="form"
+            id="form-tambah-berita"
+            novalidate
+            aria-label="Form penambahan berita baru"
+          >
+
+            <!-- ---- Judul Berita ---- -->
+            <div class="form-group">
+              <label class="form-label" for="input-judul">
+                Judul Berita
+                <span class="form-label__required" aria-hidden="true">*</span>
+              </label>
+              <input
+                class="form-control"
+                type="text"
+                id="input-judul"
+                name="judul"
+                placeholder="Masukkan judul berita…"
+                maxlength="255"
+                autocomplete="off"
+                aria-required="true"
+                aria-describedby="judul-hint judul-error"
+              />
+              <span class="form-hint" id="judul-hint">Maksimal 255 karakter.</span>
+              <span class="form-error-text" id="judul-error" role="alert"></span>
+            </div>
+
+            <!-- ---- Tanggal ---- -->
+            <div class="form-group">
+              <label class="form-label" for="input-tanggal">
+                Tanggal
+                <span class="form-label__required" aria-hidden="true">*</span>
+              </label>
+              <input
+                class="form-control"
+                type="date"
+                id="input-tanggal"
+                name="tanggal"
+                aria-required="true"
+                aria-describedby="tanggal-hint tanggal-error"
+              />
+              <span class="form-hint" id="tanggal-hint">Format: YYYY-MM-DD.</span>
+              <span class="form-error-text" id="tanggal-error" role="alert"></span>
+            </div>
+
+            <!-- ---- Foto Berita ---- -->
+            <div class="form-group">
+              <label class="form-label" for="input-foto">
+                Foto Berita
+                <span class="form-label__required" aria-hidden="true">*</span>
+              </label>
+              <input
+                class="form-control-file"
+                type="file"
+                id="input-foto"
+                name="foto"
+                accept=".jpg,.jpeg,.png"
+                aria-required="true"
+                aria-describedby="foto-hint foto-error"
+              />
+              <span class="form-hint" id="foto-hint">Format: JPG, JPEG, atau PNG. Ukuran maks. 10 MB.</span>
+              <span class="form-error-text" id="foto-error" role="alert"></span>
+            </div>
+
+            <!-- ---- File PDF ---- -->
+            <div class="form-group">
+              <label class="form-label" for="input-pdf">
+                File PDF
+                <span class="form-label__required" aria-hidden="true">*</span>
+              </label>
+              <input
+                class="form-control-file"
+                type="file"
+                id="input-pdf"
+                name="pdf"
+                accept=".pdf"
+                aria-required="true"
+                aria-describedby="pdf-hint pdf-error"
+              />
+              <span class="form-hint" id="pdf-hint">Format: PDF. Ukuran maks. 30 MB.</span>
+              <span class="form-error-text" id="pdf-error" role="alert"></span>
+            </div>
+
+            <!-- ---- Tombol Submit ---- -->
+            <div>
+              <button
+                class="btn btn--primary btn--full"
+                type="submit"
+                id="btn-tambah-berita"
+                aria-label="Tambahkan berita baru ke database"
+              >
+                <!-- Ikon tambah -->
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
+                     viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                     stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                     aria-hidden="true" focusable="false">
+                  <line x1="12" y1="5" x2="12" y2="19"/>
+                  <line x1="5" y1="12" x2="19" y2="12"/>
+                </svg>
+                Tambah Berita
+              </button>
+            </div>
+
+          </form><!-- /form-tambah-berita -->
+
+        </section><!-- /admin-form-panel -->
+
+        <!-- ============================================================
+             Kolom Kanan / Bawah: Daftar Berita
+             ============================================================ -->
+        <section class="admin-list-panel" aria-labelledby="list-panel-title">
+
+          <!-- Header daftar: judul + jumlah total -->
+          <div class="admin-list-panel__header">
+            <h2 class="admin-list-panel__title" id="list-panel-title">
+              Daftar Berita
+            </h2>
+            <span
+              class="admin-list-panel__count"
+              id="jumlah-berita"
+              aria-live="polite"
+              aria-label="Jumlah total berita yang terdaftar"
+            >
+              0 berita
+            </span>
+          </div>
+
+          <!-- ---- Input Filter Judul ---- -->
+          <div style="padding: var(--space-4) var(--space-6); border-bottom: 1px solid var(--border);">
+            <div class="input-search-wrapper" role="search">
+              <!-- Ikon kaca pembesar -->
+              <svg class="input-search-wrapper__icon"
+                   xmlns="http://www.w3.org/2000/svg"
+                   viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                   stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                   aria-hidden="true" focusable="false">
+                <circle cx="11" cy="11" r="8"/>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+              </svg>
+              <input
+                class="form-control"
+                type="search"
+                id="input-filter"
+                name="filter"
+                placeholder="Filter berdasarkan judul…"
+                autocomplete="off"
+                aria-label="Filter daftar berita berdasarkan judul"
+                aria-controls="daftar-berita"
+              />
+            </div>
+          </div>
+
+          <!-- ---- Indikator Loading Daftar ---- -->
+          <div
+            class="loading-indicator"
+            id="loading-daftar"
+            role="status"
+            aria-live="polite"
+            aria-label="Sedang memuat daftar berita"
+          >
+            <div class="loading-spinner" aria-hidden="true"></div>
+            <p class="loading-indicator__text">Memuat daftar berita&hellip;</p>
+          </div>
+
+          <!-- ---- Tabel Daftar Berita ---- -->
+          <div class="news-table-wrapper" id="daftar-berita" role="region" aria-label="Daftar berita terdaftar">
+            <table class="news-table" id="tabel-berita" aria-label="Tabel daftar berita">
+              <thead>
+                <tr>
+                  <th scope="col">Foto</th>
+                  <th scope="col">Judul</th>
+                  <th scope="col">Tanggal</th>
+                  <th scope="col">PDF</th>
+                  <th scope="col">Aksi</th>
+                </tr>
+              </thead>
+              <tbody id="tbody-berita" aria-live="polite">
+                <!-- Baris berita dirender oleh admin.js -->
+              </tbody>
+            </table>
+          </div>
+
+          <!-- ---- Pesan Daftar Kosong (tidak ada berita sama sekali) ---- -->
+          <div
+            class="list-empty"
+            id="pesan-kosong"
+            role="status"
+            aria-live="polite"
+          >
+            <svg class="list-empty__icon" xmlns="http://www.w3.org/2000/svg"
+                 viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                 stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"
+                 aria-hidden="true" focusable="false">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16
+                       a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+              <polyline points="14 2 14 8 20 8"/>
+              <line x1="12" y1="18" x2="12" y2="12"/>
+              <line x1="9" y1="15" x2="15" y2="15"/>
+            </svg>
+            <p class="list-empty__text">Belum ada berita yang ditambahkan</p>
+            <p class="list-empty__hint">
+              Gunakan form di sebelah kiri untuk menambahkan berita pertama.
+            </p>
+          </div>
+
+          <!-- ---- Pesan Filter Tidak Cocok ---- -->
+          <div
+            class="search-empty"
+            id="pesan-filter-kosong"
+            role="status"
+            aria-live="polite"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40"
+                 viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                 stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"
+                 style="margin-inline: auto; margin-bottom: var(--space-3); color: var(--text-light);"
+                 aria-hidden="true" focusable="false">
+              <circle cx="11" cy="11" r="8"/>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+              <line x1="8" y1="11" x2="14" y2="11"/>
+            </svg>
+            <p>Tidak ada berita yang cocok dengan kata kunci tersebut.</p>
+          </div>
+
+        </section><!-- /admin-list-panel -->
+
+      </div><!-- /admin-layout -->
+
+    </div><!-- /container -->
+  </main>
+
+  <!-- ================================================================
+       Dialog Konfirmasi Hapus
+       ================================================================ -->
+  <div
+    class="dialog-backdrop"
+    id="dialog-hapus"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="dialog-hapus-title"
+    aria-describedby="dialog-hapus-message"
+  >
+    <div class="dialog">
+      <!-- Ikon peringatan -->
+      <div class="dialog__icon" aria-hidden="true">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+             viewBox="0 0 24 24" fill="none" stroke="currentColor"
+             stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="3 6 5 6 21 6"/>
+          <path d="M19 6l-1 14a2 2 0 0 1-2 2H8
+                   a2 2 0 0 1-2-2L5 6"/>
+          <path d="M10 11v6"/>
+          <path d="M14 11v6"/>
+          <path d="M9 6V4a1 1 0 0 1 1-1h4
+                   a1 1 0 0 1 1 1v2"/>
+        </svg>
+      </div>
+      <h3 class="dialog__title" id="dialog-hapus-title">Hapus Berita?</h3>
+      <p class="dialog__message" id="dialog-hapus-message">
+        Apakah Anda yakin ingin menghapus berita
+        <strong id="dialog-hapus-judul"></strong>?
+        Tindakan ini tidak dapat dibatalkan.
+      </p>
+      <div class="dialog__actions">
+        <button
+          class="btn btn--secondary"
+          type="button"
+          id="btn-batal-hapus"
+          aria-label="Batal, jangan hapus berita ini"
+        >
+          Batal
+        </button>
+        <button
+          class="btn btn--danger"
+          type="button"
+          id="btn-konfirmasi-hapus"
+          aria-label="Konfirmasi hapus berita"
+          data-id=""
+        >
+          <!-- Ikon hapus -->
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
+               viewBox="0 0 24 24" fill="none" stroke="currentColor"
+               stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+               aria-hidden="true" focusable="false">
+            <polyline points="3 6 5 6 21 6"/>
+            <path d="M19 6l-1 14a2 2 0 0 1-2 2H8
+                     a2 2 0 0 1-2-2L5 6"/>
+          </svg>
+          Hapus
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================================================================
+       Container Toast Notifikasi
+       ================================================================ -->
+  <div
+    class="toast-container"
+    id="toast-container"
+    aria-live="polite"
+    aria-atomic="false"
+  ></div>
+
+  <!-- ================================================================
+       Footer
+       ================================================================ -->
+  <footer class="site-footer" role="contentinfo">
+    <div class="container">
+      <p>&copy; 2024 Pencari Berita dari Gambar. Semua hak dilindungi.</p>
+    </div>
+  </footer>
+
+  <!-- ================================================================
+       Script
+       ================================================================ -->
+  <script src="/static/js/admin.js" defer></script>
+
 </body>
 </html>
