@@ -237,22 +237,23 @@ p:last-child {
    4. Halaman Pencarian (Search Page) — index.html
    -------------------------------------------------------------------------- */
 
-/* Layout utama search page (desktop ≥1024px): dua kolom */
+/* Layout utama search page: panel unggah dan hasil tidak saling menekan. */
 .search-layout {
   display: grid;
   grid-template-columns: 1fr;
   gap: var(--space-6);
 }
 
-@media (min-width: 1024px) {
+@media (min-width: 900px) {
   .search-layout {
-    grid-template-columns: 420px 1fr;
+    grid-template-columns: minmax(300px, 360px) minmax(0, 1fr);
     align-items: start;
   }
 }
 
 /* Panel kiri: form upload */
 .search-panel {
+  min-width: 0;
   background-color: var(--card-bg);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow);
@@ -332,12 +333,15 @@ p:last-child {
 }
 
 .preview-container--visible {
-  display: block;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: var(--space-2);
 }
 
 .preview-image {
   width: 100%;
-  max-height: 240px;
+  max-height: min(42vh, 360px);
   object-fit: contain;
   border-radius: var(--radius);
   border: 1px solid var(--border);
@@ -352,11 +356,53 @@ p:last-child {
   word-break: break-all;
 }
 
+.preview-actions {
+  display: flex;
+  gap: var(--space-3);
+}
+
+.preview-actions .btn {
+  flex: 1;
+}
+
 /* Panel kanan: hasil pencarian + PDF viewer */
 .results-panel {
+  min-width: 0;
   display: flex;
   flex-direction: column;
   gap: var(--space-6);
+}
+
+#results-container,
+#results-container .result-cards {
+  min-width: 0;
+}
+
+@media (max-width: 599px) {
+  .search-panel {
+    padding: var(--space-4);
+  }
+
+  .search-panel__desc {
+    margin-bottom: var(--space-4);
+  }
+
+  .upload-area {
+    min-height: 140px;
+    padding: var(--space-6) var(--space-3);
+  }
+
+  .preview-image {
+    max-height: 52vh;
+  }
+
+  .preview-actions {
+    flex-direction: column;
+  }
+
+  .preview-actions .btn {
+    width: 100%;
+  }
 }
 
 /* Kartu hasil berita */

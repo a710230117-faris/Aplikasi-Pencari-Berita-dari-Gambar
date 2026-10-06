@@ -227,12 +227,9 @@ function validateForm() {
     valid = false;
   }
 
-  // Foto
+  // Foto (opsional)
   const fotoFile = elInputFoto.files?.[0] ?? null;
-  if (!fotoFile) {
-    setFieldError(elFotoError, elInputFoto, 'Foto berita harus dipilih.');
-    valid = false;
-  } else {
+  if (fotoFile) {
     const ext = fotoFile.name.toLowerCase().slice(fotoFile.name.lastIndexOf('.'));
     const fotoTypeOk = FOTO_TYPES.includes(fotoFile.type) || FOTO_EXTS.includes(ext);
     if (!fotoTypeOk) {
@@ -242,6 +239,8 @@ function validateForm() {
       setFieldError(elFotoError, elInputFoto, 'Ukuran foto melebihi batas maksimum 10 MB.');
       valid = false;
     }
+  } else {
+    setFieldError(elFotoError, elInputFoto, null);
   }
 
   // PDF
@@ -293,15 +292,20 @@ function renderBeritaItem(berita) {
 
   // --- Kolom Foto (thumbnail) ---
   const tdFoto = document.createElement('td');
-  const img = document.createElement('img');
-  img.src    = berita.foto_url;
-  img.alt    = `Foto berita: ${berita.judul}`;
-  img.width  = 80;
-  img.height = 60;
-  img.loading = 'lazy';
-  img.style.objectFit = 'cover';
-  img.style.borderRadius = '4px';
-  tdFoto.appendChild(img);
+  if (berita.foto_url) {
+    const img = document.createElement('img');
+    img.src    = berita.foto_url;
+    img.alt    = `Foto berita: ${berita.judul}`;
+    img.width  = 80;
+    img.height = 60;
+    img.loading = 'lazy';
+    img.style.objectFit = 'cover';
+    img.style.borderRadius = '4px';
+    tdFoto.appendChild(img);
+  } else {
+    tdFoto.textContent = '—';
+    tdFoto.style.color = 'var(--text-muted)';
+  }
 
   // --- Kolom Judul ---
   const tdJudul = document.createElement('td');
@@ -487,8 +491,10 @@ async function handleAddBerita(event) {
   const formData = new FormData();
   formData.append('judul',   elInputJudul.value.trim());
   formData.append('tanggal', elInputTanggal.value.trim());
-  formData.append('foto',    elInputFoto.files[0]);
-  formData.append('pdf',     elInputPdf.files[0]);
+  if (elInputFoto.files && elInputFoto.files[0]) {
+    formData.append('foto', elInputFoto.files[0]);
+  }
+  formData.append('pdf', elInputPdf.files[0]);
 
   // Nonaktifkan tombol submit selama proses
   elBtnTambah.disabled = true;
@@ -514,7 +520,11 @@ async function handleAddBerita(event) {
       let detail = `Gagal menambahkan berita (HTTP ${response.status}).`;
       try {
         const errData = await response.json();
-        if (errData?.detail) detail = errData.detail;
+        if (errData?.detail) {
+          detail = typeof errData.detail === 'string'
+            ? errData.detail
+            : JSON.stringify(errData.detail);
+        }
       } catch (_) { /* abaikan */ }
       showMessage(detail, 'error');
       showToast(detail, 'error');
@@ -587,7 +597,11 @@ async function eksekusiHapus(id) {
       let detail = `Gagal menghapus berita (HTTP ${response.status}).`;
       try {
         const errData = await response.json();
-        if (errData?.detail) detail = errData.detail;
+        if (errData?.detail) {
+          detail = typeof errData.detail === 'string'
+            ? errData.detail
+            : JSON.stringify(errData.detail);
+        }
       } catch (_) { /* abaikan */ }
       showMessage(detail, 'error');
       showToast(detail, 'error');

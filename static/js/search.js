@@ -22,6 +22,8 @@ let uploadArea        = null;
 let previewImage      = null;
 let previewContainer  = null;
 let previewFilename   = null;
+let btnGantiGambar    = null;
+let btnHapusGambar    = null;
 let btnCari           = null;
 let loadingIndicator  = null;
 let validationMessage = null;
@@ -37,6 +39,8 @@ let btnTutupPdf       = null;
 
 /** File yang saat ini dipilih pengguna (File | null). */
 let selectedFile = null;
+let activeSearchController = null;
+let searchRequestId = 0;
 
 // ---------------------------------------------------------------------------
 // Helper: tampil / sembunyi elemen via modifier class CSS
@@ -99,6 +103,27 @@ function hideError() {
   errorText.textContent = '';
 }
 
+function clearSelectedImage() {
+  cancelActiveSearch();
+  selectedFile = null;
+  fileInput.value = '';
+  previewImage.removeAttribute('src');
+  previewFilename.textContent = '';
+  previewContainer.classList.remove('preview-container--visible');
+  uploadArea.classList.remove('d-none');
+  clearResults();
+}
+
+function cancelActiveSearch() {
+  searchRequestId += 1;
+  if (activeSearchController) {
+    activeSearchController.abort();
+    activeSearchController = null;
+  }
+  hideElement(loadingIndicator);
+  btnCari.disabled = false;
+}
+
 // ---------------------------------------------------------------------------
 // Format tanggal YYYY-MM-DD → DD/MM/YYYY
 // ---------------------------------------------------------------------------
@@ -130,12 +155,10 @@ function handleFileSelect(event) {
   hideError();
 
   if (!file) {
-    selectedFile = null;
-    hideElement(previewContainer);
-    previewImage.src = '';
-    previewFilename.textContent = '';
     return;
   }
+  cancelActiveSearch();
+  clearResults();
 
   // Validasi format
   if (!ALLOWED_TYPES.includes(file.type)) {
@@ -143,6 +166,7 @@ function handleFileSelect(event) {
     fileInput.value = '';
     selectedFile = null;
     hideElement(previewContainer);
+    uploadArea.classList.remove('d-none');
     return;
   }
 
@@ -152,18 +176,41 @@ function handleFileSelect(event) {
     fileInput.value = '';
     selectedFile = null;
     hideElement(previewContainer);
+    uploadArea.classList.remove('d-none');
     return;
   }
 
-  // File valid — simpan referensi
-  selectedFile = file;
+  // Tahan pencarian sampai preview selesai dibaca.
+  selectedFile = null;
+  hideElement(previewContainer);
+  uploadArea.classList.remove('d-none');
 
   // Tampilkan pratinjau via FileReader
   const reader = new FileReader();
   reader.onload = (e) => {
-    previewImage.src  = e.target.result;
+    if (typeof e.target.result !== 'string') {
+      showValidation('Gambar tidak dapat ditampilkan. Silakan pilih file lain.');
+      selectedFile = null;
+      fileInput.value = '';
+      previewImage.removeAttribute('src');
+      previewFilename.textContent = '';
+      return;
+    }
+    selectedFile = file;
+    previewImage.src = e.target.result;
     previewFilename.textContent = file.name;
     showElement(previewContainer);
+    uploadArea.classList.add('d-none');
+    handleSearch(new Event('submit'));
+  };
+  reader.onerror = () => {
+    showValidation('Gambar tidak dapat dibaca. Silakan pilih file lain.');
+    selectedFile = null;
+    fileInput.value = '';
+    previewImage.removeAttribute('src');
+    previewFilename.textContent = '';
+    hideElement(previewContainer);
+    uploadArea.classList.remove('d-none');
   };
   reader.readAsDataURL(file);
 }
@@ -185,6 +232,11 @@ async function handleSearch(event) {
     return;
   }
 
+  if (activeSearchController) {
+    activeSearchController.abort();
+  }
+  const requestId = ++searchRequestId;
+
   hideValidation();
   hideError();
 
@@ -201,6 +253,7 @@ async function handleSearch(event) {
 
   // AbortController untuk timeout 30 detik
   const controller = new AbortController();
+  activeSearchController = controller;
   const timeoutId  = setTimeout(() => controller.abort(), API_TIMEOUT_MS);
 
   try {
@@ -217,10 +270,18 @@ async function handleSearch(event) {
       try {
         const errData = await response.json();
         if (errData?.detail) {
-          pesanError = `Kesalahan: ${errData.detail}`;
+          const detail = typeof errData.detail === 'string'
+            ? errData.detail
+            : JSON.stringify(errData.detail);
+          pesanError = response.status === 500
+            ? `Server mengalami gangguan saat memproses gambar (HTTP 500). ${detail}`
+            : `Kesalahan (HTTP ${response.status}): ${detail}`;
         }
       } catch (_) {
         // Abaikan jika respons bukan JSON
+      }
+      if (response.status === 500 && pesanError === 'Terjadi kesalahan pada server (HTTP 500).') {
+        pesanError = 'Server mengalami gangguan saat memproses gambar (HTTP 500). Silakan coba lagi beberapa saat.';
       }
       showError(pesanError);
       return;
@@ -232,14 +293,19 @@ async function handleSearch(event) {
   } catch (err) {
     clearTimeout(timeoutId);
 
-    if (err.name === 'AbortError') {
+    if (requestId !== searchRequestId) {
+      return;
+    } else if (err.name === 'AbortError') {
       showError('Permintaan melebihi batas waktu (30 detik). Silakan coba lagi.');
     } else {
       showError('Gagal terhubung ke server. Periksa koneksi internet Anda dan coba lagi.');
     }
   } finally {
-    hideElement(loadingIndicator);
-    btnCari.disabled = false;
+    if (requestId === searchRequestId) {
+      activeSearchController = null;
+      hideElement(loadingIndicator);
+      btnCari.disabled = false;
+    }
   }
 }
 
@@ -293,6 +359,18 @@ function buildResultCard(item) {
   const card = document.createElement('article');
   card.className = 'result-card';
 
+  if (item.foto_url) {
+    const thumbnail = document.createElement('img');
+    thumbnail.className = 'result-card__thumbnail';
+    thumbnail.src = item.foto_url;
+    thumbnail.alt = `Foto berita: ${item.judul}`;
+    thumbnail.loading = 'lazy';
+    card.appendChild(thumbnail);
+  }
+
+  const body = document.createElement('div');
+  body.className = 'result-card__body';
+
   const judul = document.createElement('h3');
   judul.className = 'result-card__title';
   judul.textContent = item.judul;
@@ -314,10 +392,11 @@ function buildResultCard(item) {
     openPDF(item.pdf_url, item.judul);
   });
 
-  card.appendChild(judul);
-  card.appendChild(tanggal);
-  card.appendChild(score);
-  card.appendChild(btnBukaPdf);
+  body.appendChild(judul);
+  body.appendChild(tanggal);
+  body.appendChild(score);
+  body.appendChild(btnBukaPdf);
+  card.appendChild(body);
 
   return card;
 }
@@ -361,6 +440,8 @@ document.addEventListener('DOMContentLoaded', () => {
   previewImage       = document.getElementById('preview-image');
   previewContainer   = document.getElementById('preview-container');
   previewFilename    = document.getElementById('preview-filename');
+  btnGantiGambar     = document.getElementById('btn-ganti-gambar');
+  btnHapusGambar     = document.getElementById('btn-hapus-gambar');
   btnCari            = document.getElementById('btn-cari');
   loadingIndicator   = document.getElementById('loading-indicator');
   validationMessage  = document.getElementById('validation-message');
@@ -415,6 +496,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Perubahan file input
   fileInput.addEventListener('change', handleFileSelect);
+  btnGantiGambar.addEventListener('click', () => {
+    fileInput.value = '';
+    fileInput.click();
+  });
+  btnHapusGambar.addEventListener('click', () => {
+    clearSelectedImage();
+    hideValidation();
+    hideError();
+  });
 
   // Tombol Cari
   btnCari.addEventListener('click', handleSearch);

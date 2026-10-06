@@ -54,6 +54,40 @@ def init_db() -> None:
             )
             """
         )
+        conn.execute(
+            """
+            CREATE TABLE IF NOT EXISTS berita_pdf_hashes (
+                berita_id   INTEGER NOT NULL,
+                page_number INTEGER NOT NULL,
+                phash       TEXT    NOT NULL,
+                dhash       TEXT    NOT NULL,
+                PRIMARY KEY (berita_id, page_number),
+                FOREIGN KEY (berita_id) REFERENCES berita(id) ON DELETE CASCADE
+            )
+            """
+        )
+        conn.execute(
+            """
+            CREATE TABLE IF NOT EXISTS berita_pdf_image_hashes (
+                berita_id   INTEGER NOT NULL,
+                page_number INTEGER NOT NULL,
+                image_xref  INTEGER NOT NULL,
+                phash       TEXT    NOT NULL,
+                dhash       TEXT    NOT NULL,
+                PRIMARY KEY (berita_id, image_xref),
+                FOREIGN KEY (berita_id) REFERENCES berita(id) ON DELETE CASCADE
+            )
+            """
+        )
+        conn.execute(
+            """
+            CREATE TABLE IF NOT EXISTS berita_pdf_index_state (
+                berita_id INTEGER PRIMARY KEY,
+                version   INTEGER NOT NULL,
+                FOREIGN KEY (berita_id) REFERENCES berita(id) ON DELETE CASCADE
+            )
+            """
+        )
         conn.commit()
     finally:
         conn.close()

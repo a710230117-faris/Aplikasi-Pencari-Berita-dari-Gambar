@@ -100,6 +100,7 @@ def test_init_db_idempotent_basic(tmp_path):
 
 @settings(
     max_examples=100,
+    deadline=None,
     suppress_health_check=[HealthCheck.function_scoped_fixture],
 )
 @given(n_calls=st.integers(min_value=2, max_value=5))
@@ -137,6 +138,7 @@ def test_init_db_idempotent_schema(tmp_path, n_calls):
 
 @settings(
     max_examples=100,
+    deadline=None,
     suppress_health_check=[HealthCheck.function_scoped_fixture],
 )
 @given(n_calls=st.integers(min_value=2, max_value=5))

@@ -20,6 +20,7 @@ Aplikasi web berbasis FastAPI untuk mencari berita yang relevan dari gambar yang
 - SQLite
 - Pillow
 - imagehash
+- PyMuPDF
 - pytest
 
 ## Struktur Project
@@ -29,6 +30,7 @@ Aplikasi web berbasis FastAPI untuk mencari berita yang relevan dari gambar yang
 ├── main.py                 # aplikasi utama FastAPI
 ├── database.py             # koneksi dan inisialisasi SQLite
 ├── matcher.py             # logika hash dan perhitungan similarity
+├── pdf_indexer.py          # indeks visual halaman dan gambar tersemat dalam PDF
 ├── requirements.txt       # dependency project
 ├── berita.db              # database SQLite (dibuat otomatis)
 ├── static/
@@ -47,6 +49,7 @@ Aplikasi web berbasis FastAPI untuk mencari berita yang relevan dari gambar yang
 │   ├── test_api.py
 │   ├── test_api_happy_path.py
 │   ├── test_database.py
+│   ├── test_pdf_indexer.py
 │   └── test_matcher.py
 ├── pytest.ini             # konfigurasi pytest
 ├── README.md
@@ -176,8 +179,10 @@ Membutuhkan header `x-admin-key`.
 Form-data yang diterima:
 - `judul`
 - `tanggal` (format `YYYY-MM-DD`)
-- `foto` (JPEG/PNG)
+- `foto` (opsional, JPEG/PNG; PDF berita juga dipakai untuk pencarian visual)
 - `pdf` (PDF)
+
+Setiap PDF yang valid diindeks dengan merender maksimal 100 halaman pertama menjadi gambar dan mengambil gambar tersemat yang dapat dibaca. Hash halaman dan gambar tersemat disimpan di tabel `berita_pdf_hashes` dan `berita_pdf_image_hashes`; gambar pencarian dibandingkan dengan hash foto berita, gambar dalam PDF, dan tampilan halaman PDF. Berita lama tanpa indeks akan diindeks ulang saat aplikasi mulai.
 
 Respons sukses:
 
@@ -205,19 +210,21 @@ Respons sukses:
 
 ## Cara Kerja Aplikasi
 
-1. Pengguna mengunggah foto di halaman utama.
+1. Pengguna memilih atau menyeret foto ke halaman utama; setelah pratinjau siap, pencarian dimulai otomatis. Tombol Cari tetap tersedia untuk mencoba ulang.
 2. Aplikasi memvalidasi tipe file dan ukuran.
 3. Gambar disimpan sementara di folder `uploads/tmp`.
 4. Sistem menghitung pHash dan dHash dari gambar.
-5. Hash tersebut dibandingkan dengan data berita yang sudah tersimpan.
-6. Data berita dengan skor kemiripan terendah ditampilkan sebagai hasil pencarian.
-7. Jika berita dipilih, PDF terkait dapat dibuka di viewer.
+5. Hash dibandingkan dengan foto berita yang tersedia, gambar tersemat, serta hash render maksimal 100 halaman pertama PDF.
+6. Skor terbaik per berita dipakai untuk mengurutkan hasil; berita tanpa foto tetap dapat ditemukan jika halaman PDF-nya cocok secara visual.
+7. Berita yang paling mirip ditampilkan bersama foto (jika tersedia) dan PDF terkait.
+8. PDF hasil teratas dibuka di viewer; PDF hasil lain bisa dibuka dari kartu berita.
 
 ## Catatan Penting
 
 - Database dikelola dengan SQLite dan dibentuk otomatis saat aplikasi mulai.
 - Folder upload otomatis dibuat jika belum ada.
 - File temp dibersihkan saat startup.
+- Saat startup, file JPG/PNG dan PDF di folder upload yang tidak dirujuk oleh data berita di database akan dihapus otomatis. File lain dan file yang masih digunakan berita tidak dihapus.
 - Untuk lingkungan produksi, sebaiknya ganti `ADMIN_KEY` menggunakan environment variable.
 
 Contoh:

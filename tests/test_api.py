@@ -24,9 +24,11 @@ from unittest.mock import MagicMock, patch
 import pytest
 from fastapi.testclient import TestClient
 from PIL import Image
+import pymupdf
 
+import main
 import database
-from main import app
+from main import app, cleanup_orphan_uploads, index_missing_pdf_pages
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -48,9 +50,15 @@ def _make_jpeg_bytes(width: int = 32, height: int = 32) -> bytes:
     return buf.getvalue()
 
 
-def _make_pdf_bytes() -> bytes:
-    """Buat bytes PDF minimal yang valid (tidak benar-benar diproses server)."""
-    return b"%PDF-1.4 1 0 obj<</Type/Catalog>>endobj xref 0 1 trailer<<>>startxref 9 %%EOF"
+def _make_pdf_bytes(image_bytes: bytes | None = None) -> bytes:
+    """Buat PDF valid satu halaman dengan konten gambar memenuhi halaman."""
+    image_bytes = image_bytes or _make_jpeg_bytes()
+    document = pymupdf.open()
+    page = document.new_page(width=32, height=32)
+    page.insert_image(page.rect, stream=image_bytes)
+    pdf_bytes = document.tobytes()
+    document.close()
+    return pdf_bytes
 
 
 def _post_berita(client: TestClient, judul: str = "Berita Test", tanggal: str = "2024-07-20"):
@@ -67,14 +75,16 @@ def _post_berita(client: TestClient, judul: str = "Berita Test", tanggal: str = 
     )
 
 
-def _cleanup_uploaded_files(db_path: str) -> None:
+def _cleanup_uploaded_files(db_path: str, foto_dir: str, pdf_dir: str) -> None:
     """Hapus file foto/PDF yang tersimpan di disk setelah test selesai."""
     try:
         conn = sqlite3.connect(db_path)
         rows = conn.execute("SELECT foto_file, pdf_file FROM berita").fetchall()
         conn.close()
         for foto_file, pdf_file in rows:
-            for folder, fname in [("uploads/foto", foto_file), ("uploads/pdf", pdf_file)]:
+            for folder, fname in [(foto_dir, foto_file), (pdf_dir, pdf_file)]:
+                if not fname:
+                    continue
                 full = os.path.join(folder, fname)
                 if os.path.exists(full):
                     os.remove(full)
@@ -95,15 +105,74 @@ def client(tmp_path):
     Cleanup file yang tersimpan di disk dilakukan setelah test selesai.
     """
     db_file = str(tmp_path / "berita_test.db")
-    uploaded_files: list[tuple[str, str]] = []  # (folder, filename)
+    foto_dir = tmp_path / "uploads" / "foto"
+    pdf_dir = tmp_path / "uploads" / "pdf"
+    tmp_dir = tmp_path / "uploads" / "tmp"
+    for folder in (foto_dir, pdf_dir, tmp_dir):
+        folder.mkdir(parents=True, exist_ok=True)
 
-    with patch.object(database, "_DB_PATH", db_file):
+    with (
+        patch.object(database, "_DB_PATH", db_file),
+        patch("main.FOTO_DIR", foto_dir),
+        patch("main.PDF_DIR", pdf_dir),
+        patch("main.TMP_DIR", tmp_dir),
+    ):
         database.init_db()
         test_client = TestClient(app, raise_server_exceptions=False)
         yield test_client, db_file
 
     # Cleanup uploaded files after test
-    _cleanup_uploaded_files(db_file)
+    _cleanup_uploaded_files(db_file, str(foto_dir), str(pdf_dir))
+
+
+def test_cleanup_orphan_uploads_keeps_referenced_and_non_media_files(tmp_path):
+    db_file = str(tmp_path / "cleanup_test.db")
+    foto_dir = tmp_path / "foto"
+    pdf_dir = tmp_path / "pdf"
+    foto_dir.mkdir()
+    pdf_dir.mkdir()
+
+    referenced_photo = "dipakai.jpg"
+    referenced_pdf = "dipakai.pdf"
+    orphan_photo = "yatim.png"
+    orphan_pdf = "yatim.pdf"
+    ignored_file = "catatan.txt"
+    for folder, name in (
+        (foto_dir, referenced_photo),
+        (pdf_dir, referenced_pdf),
+        (foto_dir, orphan_photo),
+        (pdf_dir, orphan_pdf),
+        (foto_dir, ignored_file),
+        (foto_dir, ".gitkeep"),
+    ):
+        (folder / name).write_text("file", encoding="utf-8")
+
+    with (
+        patch.object(database, "_DB_PATH", db_file),
+        patch("main.FOTO_DIR", foto_dir),
+        patch("main.PDF_DIR", pdf_dir),
+    ):
+        database.init_db()
+        conn = database.get_connection()
+        try:
+            conn.execute(
+                "INSERT INTO berita "
+                "(judul, tanggal, foto_file, pdf_file, phash, dhash) "
+                "VALUES (?, ?, ?, ?, ?, ?)",
+                ("Berita", "2024-01-01", referenced_photo, referenced_pdf, "", ""),
+            )
+            conn.commit()
+        finally:
+            conn.close()
+
+        assert cleanup_orphan_uploads() == 2
+
+    assert (foto_dir / referenced_photo).exists()
+    assert (pdf_dir / referenced_pdf).exists()
+    assert (foto_dir / ignored_file).exists()
+    assert (foto_dir / ".gitkeep").exists()
+    assert not (foto_dir / orphan_photo).exists()
+    assert not (pdf_dir / orphan_pdf).exists()
 
 
 # ---------------------------------------------------------------------------
@@ -128,6 +197,97 @@ class TestHappyPath:
         assert "id" in body
         assert body["judul"] == "Berita Pertama"
         assert "message" in body
+
+    def test_add_berita_without_photo_is_allowed(self, client):
+        """POST /api/admin/berita tanpa foto harus tetap sukses."""
+        tc, _ = client
+        resp = tc.post(
+            "/api/admin/berita",
+            headers=ADMIN_HEADERS,
+            files={
+                "judul": (None, "Tanpa Foto"),
+                "tanggal": (None, "2024-07-20"),
+                "pdf": ("berita.pdf", _make_pdf_bytes(), "application/pdf"),
+            },
+        )
+        assert resp.status_code == 201, resp.text
+        body = resp.json()
+        assert body["judul"] == "Tanpa Foto"
+
+    def test_search_matches_page_image_from_pdf_without_news_photo(self, client):
+        """Gambar unggahan dicocokkan dengan halaman PDF meski foto berita kosong."""
+        tc, db_file = client
+        query_image = _make_jpeg_bytes()
+        pdf_bytes = _make_pdf_bytes(query_image)
+
+        add_response = tc.post(
+            "/api/admin/berita",
+            headers=ADMIN_HEADERS,
+            files={
+                "judul": (None, "Berita dari PDF"),
+                "tanggal": (None, "2024-07-20"),
+                "pdf": ("berita.pdf", pdf_bytes, "application/pdf"),
+            },
+        )
+        assert add_response.status_code == 201, add_response.text
+
+        conn = sqlite3.connect(db_file)
+        try:
+            indexed_pages = conn.execute(
+                "SELECT page_number FROM berita_pdf_hashes WHERE berita_id = ?",
+                (add_response.json()["id"],),
+            ).fetchall()
+            indexed_images = conn.execute(
+                "SELECT COUNT(*) FROM berita_pdf_image_hashes WHERE berita_id = ?",
+                (add_response.json()["id"],),
+            ).fetchone()[0]
+        finally:
+            conn.close()
+        assert indexed_pages == [(1,)]
+        assert indexed_images == 1
+
+        response = tc.post(
+            "/api/cari",
+            files={"file": ("gambar.jpg", query_image, "image/jpeg")},
+        )
+        assert response.status_code == 200, response.text
+        body = response.json()
+        assert body["ditemukan"] is True
+        assert body["hasil"][0]["judul"] == "Berita dari PDF"
+        assert body["hasil"][0]["foto_url"] == ""
+        assert body["hasil"][0]["pdf_url"].startswith("/files/pdf/")
+
+    def test_legacy_pdf_without_page_index_is_indexed(self, client):
+        """Startup helper mengindeks PDF lama yang belum memiliki hash halaman."""
+        _, db_file = client
+        pdf_name = "legacy.pdf"
+        (main.PDF_DIR / pdf_name).write_bytes(_make_pdf_bytes())
+        conn = sqlite3.connect(db_file)
+        try:
+            conn.execute(
+                "INSERT INTO berita "
+                "(judul, tanggal, foto_file, pdf_file, phash, dhash) "
+                "VALUES (?, ?, ?, ?, ?, ?)",
+                ("Berita lama", "2024-07-20", "", pdf_name, "", ""),
+            )
+            conn.commit()
+        finally:
+            conn.close()
+
+        assert index_missing_pdf_pages() == 1
+        assert index_missing_pdf_pages() == 0
+        conn = sqlite3.connect(db_file)
+        try:
+            page_count = conn.execute(
+                "SELECT COUNT(*) FROM berita_pdf_hashes"
+            ).fetchone()[0]
+            image_count = conn.execute(
+                "SELECT COUNT(*) FROM berita_pdf_image_hashes"
+            ).fetchone()[0]
+        finally:
+            conn.close()
+        assert page_count == 1
+        assert image_count == 1
 
     def test_added_berita_visible_in_list(self, client):
         """Berita yang baru ditambahkan harus muncul di GET /api/admin/berita."""
@@ -276,6 +436,45 @@ class TestEdgeCases:
         assert body["ditemukan"] is False
         assert body["hasil"] == []
 
+    def test_cari_skips_news_without_photo_hash_or_pdf_file(self, client):
+        """Berita tanpa foto/hash/PDF yang tersedia diabaikan, bukan HTTP 500."""
+        tc, db_file = client
+        conn = sqlite3.connect(db_file)
+        conn.execute(
+            "INSERT INTO berita (judul, tanggal, foto_file, pdf_file, phash, dhash) "
+            "VALUES (?, ?, ?, ?, ?, ?)",
+            ("Tanpa foto", "2024-01-01", "", "ada.pdf", "", ""),
+        )
+        conn.execute(
+            "INSERT INTO berita (judul, tanggal, foto_file, pdf_file, phash, dhash) "
+            "VALUES (?, ?, ?, ?, ?, ?)",
+            ("Foto hilang", "2024-01-02", "hilang.jpg", "ada.pdf", "a" * 64, "a" * 64),
+        )
+        conn.execute(
+            "INSERT INTO berita (judul, tanggal, foto_file, pdf_file, phash, dhash) "
+            "VALUES (?, ?, ?, ?, ?, ?)",
+            ("Dokumen valid", "2024-01-03", "tersedia.jpg", "tersedia.pdf", "a" * 64, "a" * 64),
+        )
+        conn.commit()
+        conn.close()
+
+        (main.FOTO_DIR / "tersedia.jpg").write_bytes(_make_jpeg_bytes())
+        (main.PDF_DIR / "tersedia.pdf").write_bytes(_make_pdf_bytes())
+
+        with patch("main.matcher.compute_hashes", return_value=("a" * 64, "a" * 64)):
+            resp = tc.post(
+                "/api/cari",
+                files={"file": ("gambar.jpg", _make_jpeg_bytes(), "image/jpeg")},
+            )
+
+        assert resp.status_code == 200, resp.text
+        body = resp.json()
+        assert body["ditemukan"] is True
+        assert len(body["hasil"]) == 1
+        assert body["hasil"][0]["judul"] == "Dokumen valid"
+        assert body["hasil"][0]["foto_url"] == "/files/foto/tersedia.jpg"
+        assert body["hasil"][0]["pdf_url"] == "/files/pdf/tersedia.pdf"
+
     def test_cari_results_capped_at_three(self, client):
         """
         POST /api/cari harus mengembalikan maksimal 3 hasil meskipun ada lebih banyak
@@ -293,6 +492,8 @@ class TestEdgeCases:
         # Masukkan berita dengan hash yang persis identik satu sama lain:
         hash_val = "a" * 64
         for i in range(5):
+            (main.FOTO_DIR / f"foto{i}.jpg").write_bytes(_make_jpeg_bytes())
+            (main.PDF_DIR / f"pdf{i}.pdf").write_bytes(_make_pdf_bytes())
             conn.execute(
                 "INSERT INTO berita (judul, tanggal, foto_file, pdf_file, phash, dhash) "
                 "VALUES (?, ?, ?, ?, ?, ?)",
@@ -302,10 +503,11 @@ class TestEdgeCases:
         conn.commit()
         conn.close()
 
-        resp = tc.post(
-            "/api/cari",
-            files={"file": ("gambar.jpg", _make_jpeg_bytes(), "image/jpeg")},
-        )
+        with patch("main.matcher.compute_hashes", return_value=(hash_val, hash_val)):
+            resp = tc.post(
+                "/api/cari",
+                files={"file": ("gambar.jpg", _make_jpeg_bytes(), "image/jpeg")},
+            )
         assert resp.status_code == 200
         body = resp.json()
         assert len(body["hasil"]) <= 3, (
@@ -324,6 +526,8 @@ class TestEdgeCases:
         conn = sqlite3.connect(db_file)
         for i in range(3):
             hash_val = "a" * 64
+            (main.FOTO_DIR / f"foto{i}.jpg").write_bytes(_make_jpeg_bytes())
+            (main.PDF_DIR / f"pdf{i}.pdf").write_bytes(_make_pdf_bytes())
             conn.execute(
                 "INSERT INTO berita (judul, tanggal, foto_file, pdf_file, phash, dhash) "
                 "VALUES (?, ?, ?, ?, ?, ?)",
@@ -333,10 +537,11 @@ class TestEdgeCases:
         conn.commit()
         conn.close()
 
-        resp = tc.post(
-            "/api/cari",
-            files={"file": ("gambar.jpg", _make_jpeg_bytes(), "image/jpeg")},
-        )
+        with patch("main.matcher.compute_hashes", return_value=("a" * 64, "a" * 64)):
+            resp = tc.post(
+                "/api/cari",
+                files={"file": ("gambar.jpg", _make_jpeg_bytes(), "image/jpeg")},
+            )
         assert resp.status_code == 200
         scores = [item["score"] for item in resp.json()["hasil"]]
         assert scores == sorted(scores), f"Hasil tidak terurut ascending: {scores}"
