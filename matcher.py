@@ -21,31 +21,22 @@ def compute_hashes(image_path: str) -> tuple[str, str]:
     Requirements: 3.7, 3.8
     """
     try:
-        img = Image.open(image_path)
-        # Pastikan file benar-benar dapat dibaca sebagai gambar
-        img.verify()
-    except (UnidentifiedImageError, Exception) as exc:
+        with Image.open(image_path) as img:
+            img.verify()
+        with Image.open(image_path) as img:
+            return compute_hashes_from_image(img)
+    except (UnidentifiedImageError, OSError, ValueError) as exc:
         raise ValueError(
             f"File tidak dapat dibuka sebagai gambar: {image_path}"
         ) from exc
 
-    # Buka ulang setelah verify() karena verify() menutup stream internal
-    try:
-        img = Image.open(image_path)
-        phash_obj = imagehash.phash(img, hash_size=16)
-        # Buka ulang sekali lagi karena beberapa decoder mengonsumsi stream saat hashing
-        img = Image.open(image_path)
-        dhash_obj = imagehash.dhash(img, hash_size=16)
-    except (UnidentifiedImageError, Exception) as exc:
-        raise ValueError(
-            f"File tidak dapat dibuka sebagai gambar: {image_path}"
-        ) from exc
 
-    # str() pada ImageHash menghasilkan representasi hex lowercase
-    phash_hex = str(phash_obj)
-    dhash_hex = str(dhash_obj)
-
-    return phash_hex, dhash_hex
+def compute_hashes_from_image(image: Image.Image) -> tuple[str, str]:
+    """Hitung pHash dan dHash dari gambar Pillow yang sudah terbuka."""
+    return (
+        str(imagehash.phash(image, hash_size=16)),
+        str(imagehash.dhash(image, hash_size=16)),
+    )
 
 
 def hamming_distance(hash_a: str, hash_b: str) -> int:

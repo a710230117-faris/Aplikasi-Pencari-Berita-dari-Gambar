@@ -17,6 +17,7 @@ from unittest.mock import patch
 import pytest
 from fastapi.testclient import TestClient
 from PIL import Image
+import pymupdf
 
 import database
 from main import app
@@ -29,11 +30,21 @@ from main import app
 def simple_client(tmp_path):
     """
     Client sederhana yang menggunakan DB isolasi tanpa mock os penuh.
-    Upload files tetap ke direktori asli tapi terisolasi via DB patch.
+    Database dan upload files diisolasi ke tmp_path.
     """
     db_file = str(tmp_path / "test_berita.db")
+    foto_dir = tmp_path / "uploads" / "foto"
+    pdf_dir = tmp_path / "uploads" / "pdf"
+    tmp_dir = tmp_path / "uploads" / "tmp"
+    for folder in (foto_dir, pdf_dir, tmp_dir):
+        folder.mkdir(parents=True, exist_ok=True)
 
-    with patch.object(database, "_DB_PATH", db_file):
+    with (
+        patch.object(database, "_DB_PATH", db_file),
+        patch("main.FOTO_DIR", foto_dir),
+        patch("main.PDF_DIR", pdf_dir),
+        patch("main.TMP_DIR", tmp_dir),
+    ):
         database.init_db()
         client = TestClient(app, raise_server_exceptions=False)
         yield client, db_file
@@ -55,8 +66,12 @@ def make_jpeg_bytes(width: int = 32, height: int = 32) -> bytes:
 
 
 def make_pdf_bytes() -> bytes:
-    """Buat bytes PDF minimal yang valid."""
-    return b"%PDF-1.4 1 0 obj<</Type/Catalog>>endobj"
+    """Buat PDF valid satu halaman."""
+    document = pymupdf.open()
+    document.new_page()
+    pdf_bytes = document.tobytes()
+    document.close()
+    return pdf_bytes
 
 
 def add_berita(client, judul: str = "Berita Test", tanggal: str = "2024-06-15"):
@@ -79,10 +94,15 @@ def cleanup_berita_files(db_file: str):
         conn = sqlite3.connect(db_file)
         rows = conn.execute("SELECT foto_file, pdf_file FROM berita").fetchall()
         conn.close()
+        upload_root = os.path.join(os.path.dirname(db_file), "uploads")
         for row in rows:
-            for f in row:
-                for folder in ("uploads/foto", "uploads/pdf"):
-                    path = os.path.join(folder, f)
+            foto_file, pdf_file = row
+            for folder, filename in (
+                (os.path.join(upload_root, "foto"), foto_file),
+                (os.path.join(upload_root, "pdf"), pdf_file),
+            ):
+                if filename:
+                    path = os.path.join(folder, filename)
                     if os.path.exists(path):
                         os.remove(path)
     except Exception:

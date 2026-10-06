@@ -73,16 +73,17 @@
               Format: JPEG, PNG, WebP &mdash; Ukuran maks. 5 MB
             </span>
 
-            <!-- Input file tersembunyi; dikendalikan oleh JS -->
-            <input
-              class="upload-area__input"
-              type="file"
-              id="file-input"
-              name="file"
-              accept="image/jpeg,image/png,image/webp"
-              aria-label="Pilih file gambar"
-            />
           </div>
+          <!-- Input terpisah agar tombol Ganti Gambar tetap dapat membukanya
+               saat area drag-and-drop disembunyikan setelah preview muncul. -->
+          <input
+            class="sr-only"
+            type="file"
+            id="file-input"
+            name="file"
+            accept="image/jpeg,image/png,image/webp"
+            aria-label="Pilih file gambar"
+          />
 
           <!-- ---- Pratinjau Gambar ---- -->
           <div class="preview-container" id="preview-container" aria-live="polite">
@@ -93,6 +94,14 @@
               alt="Pratinjau gambar yang dipilih"
             />
             <p class="preview-filename" id="preview-filename"></p>
+            <div class="preview-actions">
+              <button class="btn btn--secondary btn--sm" type="button" id="btn-ganti-gambar">
+                Ganti Gambar
+              </button>
+              <button class="btn btn--danger btn--sm" type="button" id="btn-hapus-gambar">
+                Hapus
+              </button>
+            </div>
           </div>
 
           <!-- ---- Pesan Validasi ---- -->
@@ -177,6 +186,7 @@
 
           <!-- ---- Kartu Hasil Pencarian ---- -->
           <section
+            class="result-cards"
             id="results-container"
             aria-label="Hasil pencarian berita"
             aria-live="polite"
@@ -201,7 +211,7 @@
             </svg>
             <p class="no-results__text">Berita tidak ditemukan</p>
             <p class="no-results__hint">
-              Coba unggah gambar lain yang lebih spesifik.
+              Coba unggah gambar lain. Hanya berita yang memiliki foto dan PDF tersedia yang dapat dicocokkan.
             </p>
           </div>
 
