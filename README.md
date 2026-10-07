@@ -106,19 +106,43 @@ Setelah server berjalan, buka browser ke:
 - Frontend: http://127.0.0.1:8000/
 - Admin: http://127.0.0.1:8000/admin
 
-## Kunci Admin Default
+## Konfigurasi Kunci Admin
 
-Admin menggunakan header `x-admin-key` untuk autentikasi. Nilai default saat ini:
+Endpoint admin menggunakan header `x-admin-key` untuk autentikasi. Secara default,
+aplikasi memakai `admin-dev-key`, yang hanya ditujukan untuk pengembangan lokal.
+Untuk menggantinya, atur environment variable `ADMIN_KEY` sebelum menjalankan server.
+
+Windows PowerShell:
 
 ```text
-admin-dev-key
+$env:ADMIN_KEY = "ganti-dengan-kunci-rahasia"
+uvicorn main:app --reload
 ```
 
-Contoh header:
+Windows CMD:
+
+```cmd
+set ADMIN_KEY=ganti-dengan-kunci-rahasia
+uvicorn main:app --reload
+```
+
+Linux/macOS:
+
+```bash
+export ADMIN_KEY="ganti-dengan-kunci-rahasia"
+uvicorn main:app --reload
+```
+
+Gunakan nilai `ADMIN_KEY` yang sama pada header untuk setiap endpoint admin.
+Contoh berikut hanya berlaku jika server memakai nilai default:
 
 ```http
 x-admin-key: admin-dev-key
 ```
+
+Jangan gunakan kunci default atau contoh kunci di atas pada lingkungan produksi.
+Simpan kunci rahasia di konfigurasi environment/deployment dan jangan masukkan ke
+repository.
 
 ## Endpoint API
 
@@ -225,19 +249,8 @@ Respons sukses:
 - Folder upload otomatis dibuat jika belum ada.
 - File temp dibersihkan saat startup.
 - Saat startup, file JPG/PNG dan PDF di folder upload yang tidak dirujuk oleh data berita di database akan dihapus otomatis. File lain dan file yang masih digunakan berita tidak dihapus.
-- Untuk lingkungan produksi, sebaiknya ganti `ADMIN_KEY` menggunakan environment variable.
-
-Contoh:
-
-```bash
-set ADMIN_KEY=your_secret_key
-```
-
-atau di Linux/macOS:
-
-```bash
-export ADMIN_KEY=your_secret_key
-```
+- Untuk lingkungan produksi, wajib ganti kunci default dengan `ADMIN_KEY` yang kuat
+  dan rahasia; lihat bagian [Konfigurasi Kunci Admin](#konfigurasi-kunci-admin).
 
 ## Testing
 
