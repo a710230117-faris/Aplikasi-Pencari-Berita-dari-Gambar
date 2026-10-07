@@ -20,6 +20,7 @@ from PIL import Image
 import pymupdf
 
 import database
+import main
 from main import app
 
 # ---------------------------------------------------------------------------
@@ -41,6 +42,7 @@ def simple_client(tmp_path):
 
     with (
         patch.object(database, "_DB_PATH", db_file),
+        patch.object(main, "ADMIN_KEY", ADMIN_KEY),
         patch("main.FOTO_DIR", foto_dir),
         patch("main.PDF_DIR", pdf_dir),
         patch("main.TMP_DIR", tmp_dir),
@@ -54,7 +56,7 @@ def simple_client(tmp_path):
 # Helpers
 # ---------------------------------------------------------------------------
 
-ADMIN_KEY = "admin-dev-key"
+ADMIN_KEY = "test-admin-key"
 ADMIN_HEADERS = {"x-admin-key": ADMIN_KEY}
 
 
@@ -290,6 +292,13 @@ class TestAuthentication:
         client, _ = simple_client
         resp = client.get("/api/admin/berita", headers={"x-admin-key": "kunci-salah"})
         assert resp.status_code == 403
+
+    def test_get_admin_without_server_key_configured_returns_503(self, simple_client):
+        """Endpoint admin dinonaktifkan jika ADMIN_KEY belum dikonfigurasi."""
+        client, _ = simple_client
+        with patch.object(main, "ADMIN_KEY", None):
+            resp = client.get("/api/admin/berita", headers=ADMIN_HEADERS)
+        assert resp.status_code == 503
 
     def test_post_berita_without_key_returns_403(self, simple_client):
         """POST /api/admin/berita tanpa kunci harus 403."""

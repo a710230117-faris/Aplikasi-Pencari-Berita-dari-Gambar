@@ -52,7 +52,7 @@
 
 #### Acceptance Criteria
 
-1. THE Server SHALL membaca nilai Admin_Key dari environment variable `ADMIN_KEY`; IF environment variable `ADMIN_KEY` tidak diset atau bernilai kosong, THEN THE Server SHALL menggunakan nilai default `"admin-dev-key"` khusus untuk environment pengembangan.
+1. THE Server SHALL membaca nilai Admin_Key dari environment variable `ADMIN_KEY`; IF environment variable `ADMIN_KEY` tidak diset atau bernilai kosong, THEN THE Server SHALL menonaktifkan endpoint admin dan mengembalikan HTTP 503.
 2. WHEN permintaan ke endpoint admin diterima tanpa header `x-admin-key`, THEN THE Server SHALL mengembalikan respons HTTP 403 disertai pesan error yang mengindikasikan autentikasi diperlukan, tanpa memproses permintaan lebih lanjut.
 3. WHEN permintaan ke endpoint admin diterima dengan header `x-admin-key` yang nilainya tidak sesuai dengan Admin_Key, THEN THE Server SHALL mengembalikan respons HTTP 403 disertai pesan error yang mengindikasikan kunci tidak valid, tanpa memproses permintaan lebih lanjut.
 4. WHEN permintaan ke endpoint admin diterima dengan header `x-admin-key` yang nilainya sesuai dengan Admin_Key, THEN THE Server SHALL memproses permintaan tersebut dan mengembalikan respons sesuai logika endpoint yang dituju.
