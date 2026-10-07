@@ -108,9 +108,17 @@ Setelah server berjalan, buka browser ke:
 
 ## Konfigurasi Kunci Admin
 
-Endpoint admin menggunakan header `x-admin-key` untuk autentikasi. Secara default,
-aplikasi memakai `admin-dev-key`, yang hanya ditujukan untuk pengembangan lokal.
-Untuk menggantinya, atur environment variable `ADMIN_KEY` sebelum menjalankan server.
+Endpoint admin menggunakan header `x-admin-key` untuk autentikasi. Aplikasi tidak
+memiliki kunci default: jika `ADMIN_KEY` tidak diatur atau kosong, endpoint admin
+dinonaktifkan dan mengembalikan HTTP 503. Buat kunci acak yang kuat dan atur
+environment variable `ADMIN_KEY` sebelum menjalankan server. Server perlu dimulai
+ulang setelah nilai kunci diubah.
+
+Buat kunci acak dengan Python:
+
+```bash
+python -c "import secrets; print(secrets.token_urlsafe(32))"
+```
 
 Windows PowerShell:
 
@@ -133,16 +141,12 @@ export ADMIN_KEY="ganti-dengan-kunci-rahasia"
 uvicorn main:app --reload
 ```
 
-Gunakan nilai `ADMIN_KEY` yang sama pada header untuk setiap endpoint admin.
-Contoh berikut hanya berlaku jika server memakai nilai default:
+Gunakan nilai `ADMIN_KEY` yang sama pada header untuk setiap endpoint admin. Jangan
+menaruh kunci pada kode, file yang di-commit, atau URL. Di produksi, kirim permintaan
+admin hanya melalui HTTPS (langsung atau melalui reverse proxy TLS tepercaya).
 
-```http
-x-admin-key: admin-dev-key
-```
-
-Jangan gunakan kunci default atau contoh kunci di atas pada lingkungan produksi.
-Simpan kunci rahasia di konfigurasi environment/deployment dan jangan masukkan ke
-repository.
+Simpan kunci rahasia hanya pada konfigurasi environment/deployment dan jangan
+memasukkannya ke repository.
 
 ## Endpoint API
 
@@ -249,8 +253,10 @@ Respons sukses:
 - Folder upload otomatis dibuat jika belum ada.
 - File temp dibersihkan saat startup.
 - Saat startup, file JPG/PNG dan PDF di folder upload yang tidak dirujuk oleh data berita di database akan dihapus otomatis. File lain dan file yang masih digunakan berita tidak dihapus.
-- Untuk lingkungan produksi, wajib ganti kunci default dengan `ADMIN_KEY` yang kuat
-  dan rahasia; lihat bagian [Konfigurasi Kunci Admin](#konfigurasi-kunci-admin).
+- Untuk mengaktifkan endpoint admin, tetapkan `ADMIN_KEY` yang kuat dan rahasia;
+  lihat bagian [Konfigurasi Kunci Admin](#konfigurasi-kunci-admin).
+- Untuk lingkungan produksi, letakkan aplikasi di belakang HTTPS dan tinjau serta
+  perbarui dependency secara berkala.
 
 ## Testing
 

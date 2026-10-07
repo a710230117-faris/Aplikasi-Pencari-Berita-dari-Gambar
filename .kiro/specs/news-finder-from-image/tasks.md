@@ -46,7 +46,7 @@ Implementasi dilakukan secara incremental dari lapisan bawah ke atas: konfiguras
 
 - [x] 5. Implementasi `main.py` — Setup awal, konstanta, dan startup
   - [x] 5.1 Tulis konstanta, startup event, dan static mounts
-    - Definisikan `MAX_JARAK = 80` dan `ADMIN_KEY = os.getenv("ADMIN_KEY", "admin-dev-key")`
+    - Definisikan `MAX_JARAK = 80` dan baca `ADMIN_KEY` dari environment tanpa nilai default; nonaktifkan endpoint admin jika tidak tersedia
     - Implementasi startup event: buat folder `uploads/foto/`, `uploads/pdf/`, `uploads/tmp/` jika belum ada; hapus semua file dengan pola `tmp_*` di `uploads/tmp/`
     - Mount `StaticFiles` untuk `/files/foto` → `uploads/foto` dan `/files/pdf` → `uploads/pdf`
     - Mount `StaticFiles` untuk `/` (HTML) dan route `GET /admin`

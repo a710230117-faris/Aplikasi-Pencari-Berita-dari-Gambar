@@ -34,7 +34,7 @@ from main import app, cleanup_orphan_uploads, index_missing_pdf_pages
 # Constants
 # ---------------------------------------------------------------------------
 
-ADMIN_KEY = "admin-dev-key"
+ADMIN_KEY = "test-admin-key"
 ADMIN_HEADERS = {"x-admin-key": ADMIN_KEY}
 
 
@@ -113,6 +113,7 @@ def client(tmp_path):
 
     with (
         patch.object(database, "_DB_PATH", db_file),
+        patch.object(main, "ADMIN_KEY", ADMIN_KEY),
         patch("main.FOTO_DIR", foto_dir),
         patch("main.PDF_DIR", pdf_dir),
         patch("main.TMP_DIR", tmp_dir),

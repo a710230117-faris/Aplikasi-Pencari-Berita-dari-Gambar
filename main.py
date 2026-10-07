@@ -8,6 +8,7 @@ Requirements: 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.1–2.5,
 """
 
 import glob
+import hmac
 import logging
 import os
 import re
@@ -46,7 +47,7 @@ TMP_DIR = UPLOAD_ROOT / "tmp"
 STATIC_DIR = BASE_DIR / "static"
 
 MAX_JARAK: int = 80
-ADMIN_KEY: str = os.getenv("ADMIN_KEY", "admin-dev-key")
+ADMIN_KEY: Optional[str] = os.getenv("ADMIN_KEY") or None
 
 # ---------------------------------------------------------------------------
 # Application
@@ -254,12 +255,20 @@ async def verify_admin_key(x_admin_key: Optional[str] = Header(default=None)) ->
     """
     Dependency FastAPI untuk memverifikasi header x-admin-key.
 
+    - Jika ADMIN_KEY belum dikonfigurasi, endpoint admin dinonaktifkan (503).
     - Jika header tidak ada (None) atau nilainya tidak cocok secara exact match
       dengan ADMIN_KEY, raise HTTPException 403.
     - Perbandingan bersifat case-sensitive exact match.            (Req 2.5)
     - ADMIN_KEY dibaca dari environment variable saat startup.     (Req 2.1)
     """
-    if not x_admin_key or x_admin_key != ADMIN_KEY:
+    if not ADMIN_KEY:
+        raise HTTPException(
+            status_code=503,
+            detail="Endpoint admin belum dikonfigurasi.",
+        )
+    if not x_admin_key or not hmac.compare_digest(
+        x_admin_key.encode("utf-8"), ADMIN_KEY.encode("utf-8")
+    ):
         raise HTTPException(
             status_code=403,
             detail="Autentikasi diperlukan atau kunci tidak valid.",

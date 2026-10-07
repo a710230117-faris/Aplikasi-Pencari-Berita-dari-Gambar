@@ -161,7 +161,7 @@ Aplikasi FastAPI dengan semua route. Struktur internal:
 
 ```
 main.py
-├── Constants          : MAX_JARAK = 80, ADMIN_KEY = os.getenv(...)
+├── Constants          : MAX_JARAK = 80, ADMIN_KEY = os.getenv(...) or None
 ├── Startup event      : create dirs, cleanup tmp_* files
 ├── Static mounts      : /files/foto/, /files/pdf/
 ├── Page routes        : GET / → index.html, GET /admin → admin.html
@@ -175,6 +175,7 @@ main.py
 #### Dependency: `verify_admin_key`
 
 ```python
+import hmac
 from fastapi import Header, HTTPException, Depends
 
 async def verify_admin_key(x_admin_key: str = Header(...)):
@@ -186,7 +187,11 @@ FastAPI secara otomatis mengembalikan 422 jika header tidak ada sama sekali; unt
 
 ```python
 async def verify_admin_key(x_admin_key: Optional[str] = Header(default=None)):
-    if not x_admin_key or x_admin_key != ADMIN_KEY:
+    if not ADMIN_KEY:
+        raise HTTPException(status_code=503, detail="Endpoint admin belum dikonfigurasi.")
+    if not x_admin_key or not hmac.compare_digest(
+        x_admin_key.encode("utf-8"), ADMIN_KEY.encode("utf-8")
+    ):
         raise HTTPException(status_code=403, detail="Autentikasi diperlukan atau kunci tidak valid.")
 ```
 
