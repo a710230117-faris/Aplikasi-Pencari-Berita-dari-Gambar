@@ -237,14 +237,14 @@ app = FastAPI(title="Pencari Berita dari Gambar", lifespan=lifespan)
 # Sajikan file foto berita → GET /files/foto/{filename}  (Req 1.5, 1.6)
 app.mount(
     "/files/foto",
-    StaticFiles(directory=str(FOTO_DIR)),
+    StaticFiles(directory=str(FOTO_DIR), check_dir=False),
     name="files_foto",
 )
 
 # Sajikan file PDF berita → GET /files/pdf/{filename}    (Req 1.7, 1.8)
 app.mount(
     "/files/pdf",
-    StaticFiles(directory=str(PDF_DIR)),
+    StaticFiles(directory=str(PDF_DIR), check_dir=False),
     name="files_pdf",
 )
 
