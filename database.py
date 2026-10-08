@@ -6,9 +6,11 @@ Requirements: 1.1, 1.2, 11.2
 
 import os
 import sqlite3
+from pathlib import Path
 
-# Path ke file database relatif terhadap lokasi modul ini
-_DB_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "berita.db")
+_BASE_DIR = Path(__file__).resolve().parent
+_DATA_DIR = Path(os.getenv("APP_DATA_DIR", str(_BASE_DIR))).resolve()
+_DB_PATH = os.fspath(_DATA_DIR / "berita.db")
 
 
 def get_connection() -> sqlite3.Connection:

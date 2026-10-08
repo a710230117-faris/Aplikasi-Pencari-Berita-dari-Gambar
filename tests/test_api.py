@@ -176,6 +176,35 @@ def test_cleanup_orphan_uploads_keeps_referenced_and_non_media_files(tmp_path):
     assert not (pdf_dir / orphan_pdf).exists()
 
 
+def test_seed_persistent_data_copies_bundled_data_only_once(tmp_path, monkeypatch):
+    base_dir = tmp_path / "app"
+    data_dir = tmp_path / "volume"
+    source_uploads = base_dir / "uploads"
+    target_uploads = data_dir / "uploads"
+    (source_uploads / "foto").mkdir(parents=True)
+    (source_uploads / "pdf").mkdir(parents=True)
+    (target_uploads / "foto").mkdir(parents=True)
+    (target_uploads / "pdf").mkdir(parents=True)
+    (base_dir / "berita.db").write_bytes(b"initial database")
+    (source_uploads / "foto" / "initial.jpg").write_bytes(b"initial photo")
+    (source_uploads / "pdf" / "initial.pdf").write_bytes(b"initial pdf")
+
+    monkeypatch.setattr(main, "BASE_DIR", base_dir)
+    monkeypatch.setattr(main, "DATA_DIR", data_dir)
+    monkeypatch.setattr(main, "UPLOAD_ROOT", target_uploads)
+
+    main.seed_persistent_data()
+
+    assert (data_dir / "berita.db").read_bytes() == b"initial database"
+    assert (target_uploads / "foto" / "initial.jpg").read_bytes() == b"initial photo"
+    assert (target_uploads / "pdf" / "initial.pdf").read_bytes() == b"initial pdf"
+
+    (base_dir / "berita.db").write_bytes(b"updated image database")
+    main.seed_persistent_data()
+
+    assert (data_dir / "berita.db").read_bytes() == b"initial database"
+
+
 # ---------------------------------------------------------------------------
 # 1. Happy Path
 # ---------------------------------------------------------------------------

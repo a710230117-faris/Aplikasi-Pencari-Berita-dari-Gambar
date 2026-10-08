@@ -12,6 +12,7 @@ import hmac
 import logging
 import os
 import re
+import shutil
 import uuid
 from contextlib import asynccontextmanager
 from pathlib import Path
@@ -40,7 +41,8 @@ logger = logging.getLogger(__name__)
 # ---------------------------------------------------------------------------
 
 BASE_DIR = Path(__file__).resolve().parent
-UPLOAD_ROOT = BASE_DIR / "uploads"
+DATA_DIR = Path(os.getenv("APP_DATA_DIR", str(BASE_DIR))).resolve()
+UPLOAD_ROOT = DATA_DIR / "uploads"
 FOTO_DIR = UPLOAD_ROOT / "foto"
 PDF_DIR = UPLOAD_ROOT / "pdf"
 TMP_DIR = UPLOAD_ROOT / "tmp"
@@ -93,6 +95,30 @@ def cleanup_orphan_uploads() -> int:
 
     logger.info("Pembersihan file unggahan selesai: %s file dihapus.", deleted_count)
     return deleted_count
+
+
+def seed_persistent_data() -> None:
+    """Copy the bundled database and uploads to a new persistent data directory."""
+    if DATA_DIR == BASE_DIR or (DATA_DIR / "berita.db").exists():
+        return
+
+    seed_database = BASE_DIR / "berita.db"
+    if seed_database.is_file():
+        shutil.copy2(seed_database, DATA_DIR / "berita.db")
+
+    seed_upload_root = BASE_DIR / "uploads"
+    for category in ("foto", "pdf"):
+        source_dir = seed_upload_root / category
+        target_dir = UPLOAD_ROOT / category
+        if not source_dir.is_dir():
+            continue
+
+        for source_file in source_dir.iterdir():
+            if not source_file.is_file() or source_file.is_symlink():
+                continue
+            target_file = target_dir / source_file.name
+            if not target_file.exists():
+                shutil.copy2(source_file, target_file)
 
 
 def index_missing_pdf_pages() -> int:
@@ -185,6 +211,7 @@ async def lifespan(_: FastAPI):
         folder.mkdir(parents=True, exist_ok=True)
         logger.info("Folder dipastikan ada: %s", folder)
 
+    seed_persistent_data()
     for tmp_file in glob.glob(str(TMP_DIR / "tmp_*")):
         if os.path.isfile(tmp_file):
             try:

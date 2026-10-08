@@ -106,6 +106,22 @@ Setelah server berjalan, buka browser ke:
 - Frontend: http://127.0.0.1:8000/
 - Admin: http://127.0.0.1:8000/admin
 
+## Deploy ke Railway
+
+1. Push project ke GitHub, lalu buat project Railway dari repository tersebut.
+   Railway akan menginstal dependency dari `requirements.txt` dan menjalankan
+   perintah yang ditentukan di `railway.json`.
+2. Tambahkan Railway Volume pada service dengan mount path `/data`.
+3. Atur variable service berikut:
+   - `APP_DATA_DIR=/data`
+   - `ADMIN_KEY` dengan nilai acak yang kuat dan rahasia.
+4. Deploy service dan buka domain publik yang dibuat Railway.
+
+Pada deploy pertama, aplikasi menyalin `berita.db` dan file foto/PDF awal dari
+repository ke volume jika database belum ada di volume. Setelah itu data disimpan
+di volume dan tetap tersedia saat service di-deploy ulang. Jangan hapus atau
+mengganti volume jika ingin mempertahankan data tersebut.
+
 ## Konfigurasi Kunci Admin
 
 Endpoint admin menggunakan header `x-admin-key` untuk autentikasi. Aplikasi tidak
