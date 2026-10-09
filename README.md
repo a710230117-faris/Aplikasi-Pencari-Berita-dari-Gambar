@@ -2,6 +2,17 @@
 
 Aplikasi web berbasis FastAPI untuk mencari berita yang relevan dari gambar yang diunggah. Sistem ini menggunakan pendekatan perceptual hashing untuk membandingkan citra dan mencari berita yang paling mirip berdasarkan kemiripan visual.
 
+## Demo Aplikasi
+
+Versi produksi dapat dicoba di [Aplikasi Pencari Berita dari Gambar](https://aplikasi-pencari-berita-dari-gambar-production.up.railway.app/).
+
+Sebagai uji demo, gambar yang menampilkan acara komunitas di Solo diunggah ke
+aplikasi. Pada 9 Oktober 2026, aplikasi menampilkan hasil **“QRIS Parkir Solo
+Dimulai”** dengan skor **66** dan menyediakan tombol untuk membuka PDF berita.
+Hasil dapat berubah jika data berita di aplikasi diperbarui.
+
+![Tangkapan layar hasil pencarian pada aplikasi demo](docs/demo-hasil-pencarian.png)
+
 ## Fitur Utama
 
 - Unggah gambar (JPEG, PNG, WebP) untuk pencarian berita
