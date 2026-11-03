@@ -176,14 +176,14 @@ Implementasi dilakukan secara incremental dari lapisan bawah ke atas: konfiguras
     - _Requirements: 8.1, 8.2, 8.3, 8.4, 8.5, 8.6, 8.7, 8.8, 8.9, 8.10, 8.11, 8.12, 8.13, 8.14, 8.15, 8.16_
 
 - [x] 15. Tulis integration tests non-property (`tests/test_api.py`)
-  - [x]* 15.1 Tulis integration tests happy path dan edge cases
+  - [x] 15.1 Tulis integration tests happy path dan edge cases
     - Happy path: tambah berita (POST 201) → verifikasi muncul di GET list → hapus (DELETE 200) → verifikasi hilang dari GET list
     - Edge cases: DELETE id tidak ada → 404; GET list saat DB kosong → daftar kosong; POST `/api/cari` tanpa berita di DB → `{"ditemukan": false, "hasil": []}`
     - Error handling: mock DB failure pada `/api/cari` → 503; mock DB failure pada GET admin → 500
     - File deletion failure on DELETE: mock `os.remove` throw error → verifikasi tetap return 200
     - _Requirements: 4.1, 4.2, 4.4, 5.1, 5.2, 6.4, 6.5, 6.8_
 
-- [ ] 16. Final checkpoint — Semua tes lulus
+- [x] 16. Final checkpoint — Semua tes lulus
   - Pastikan semua tes (unit, property-based, integration) lulus dengan `pytest tests/` tanpa error, tanyakan kepada pengguna jika ada pertanyaan.
 
 ## Notes
